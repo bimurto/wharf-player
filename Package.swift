@@ -9,6 +9,7 @@ let package = Package(
         .systemLibrary(name: "CLibSSH", pkgConfig: "libssh", providers: [.brew(["libssh"])]),
         .target(name: "Core", dependencies: ["CLibSSH"]),
         .testTarget(name: "CoreTests", dependencies: ["Core"]),
+        .executableTarget(name: "SFTPPlayer", dependencies: ["CMPV", "Core"]),
         .executableTarget(name: "Spike", dependencies: ["CMPV", "Core"]),
     ]
 )

@@ -91,6 +91,26 @@ final class MPVGLView: NSOpenGLView {
         }
     }
     override var acceptsFirstResponder: Bool { true }
+
+    /// Stops playback and releases mpv. The render context must be freed before the mpv handle.
+    func shutdown() {
+        openGLContext?.makeCurrentContext()
+        if let renderCtx {
+            mpv_render_context_set_update_callback(renderCtx, nil, nil)
+            mpv_render_context_free(renderCtx)
+            self.renderCtx = nil
+        }
+        if let mpv {
+            mpv_terminate_destroy(mpv)
+            self.mpv = nil
+        }
+    }
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    var view: MPVGLView?
+    func applicationShouldTerminateAfterLastWindowClosed(_ app: NSApplication) -> Bool { true }
+    func applicationWillTerminate(_ notification: Notification) { view?.shutdown() }
 }
 
 guard let url = ProcessInfo.processInfo.environment["SPIKE_URL"] else {
@@ -110,6 +130,12 @@ if env["SPIKE_PROXY"] != nil {
     playURL = "http://127.0.0.1:\(p.port)/media"
 }
 
+if env["SPIKE_HEADLESS"] != nil, let proxy {
+    print("PORT=\(proxy.port)")
+    fflush(stdout)
+    RunLoop.main.run()
+}
+
 let app = NSApplication.shared
 app.setActivationPolicy(.regular)
 let attrs: [NSOpenGLPixelFormatAttribute] = [
@@ -118,6 +144,9 @@ let attrs: [NSOpenGLPixelFormatAttribute] = [
 ]
 let view = MPVGLView(frame: NSRect(x: 0, y: 0, width: 960, height: 540), pixelFormat: NSOpenGLPixelFormat(attributes: attrs))!
 let window = NSWindow(contentRect: view.frame, styleMask: [.titled, .closable, .resizable, .miniaturizable], backing: .buffered, defer: false)
+let delegate = AppDelegate()
+delegate.view = view
+app.delegate = delegate
 window.contentView = view
 window.title = "Spike"
 window.makeKeyAndOrderFront(nil)

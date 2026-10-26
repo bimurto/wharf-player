@@ -121,9 +121,20 @@ guard let url = ProcessInfo.processInfo.environment["SPIKE_URL"] else {
 
 let env = ProcessInfo.processInfo.environment
 if let dir = env["SPIKE_LIST"], let target = SFTPTarget(url, keyPath: env["SPIKE_KEY"]) {
+    if let kh = env["SPIKE_KNOWN_HOSTS"] { KnownHosts.path = kh }
     let browser = SFTPBrowser(pool: SFTPSessionPool(target))
     Task {
-        switch await browser.list(dir) {
+        var result = await browser.list(dir)
+        if case .failure(let f) = result, case .unknown(let fp)? = f.hostKey {
+            print("UNTRUSTED \(fp.hostLabel) \(fp.keyType) \(fp.sha256)")
+            if env["SPIKE_TRUST"] != nil {
+                print("trust ->", KnownHosts.trust(fp, target: target))
+                result = await browser.list(dir)
+            }
+        } else if case .failure(let f) = result, case .changed(let fp)? = f.hostKey {
+            print("CHANGED \(fp.sha256)")
+        }
+        switch result {
         case .success(let entries):
             for e in Library.sorted(entries, by: .modifiedNewest).prefix(8) {
                 print("\(e.isDirectory ? "d" : "-") \(e.size) \(e.modified?.description ?? "-") \(e.name)")

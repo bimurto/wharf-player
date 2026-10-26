@@ -9,6 +9,15 @@ struct PlayerScreen: View {
     private var player: MPVPlayer { model.player }
 
     var body: some View {
+        HSplitView {
+            if model.showSidebar {
+                ServersPanel(model: model).frame(minWidth: 320, idealWidth: 380, maxWidth: 640)
+            }
+            playerArea.frame(minWidth: 480)
+        }
+    }
+
+    private var playerArea: some View {
         ZStack(alignment: .bottom) {
             MPVVideoView(player: player)
             if let error = player.errorMessage {
@@ -24,7 +33,11 @@ struct PlayerScreen: View {
         }
         .overlay(alignment: .topLeading) {
             if controlsVisible || player.paused {
-                Button("Open…") { model.showOpenSheet = true }.padding(12)
+                HStack {
+                    Button(model.showSidebar ? "Hide Servers" : "Servers") { model.showSidebar.toggle() }
+                    Button("Open…") { model.showOpenSheet = true }
+                }
+                .padding(12)
             }
         }
         .background(.black)
@@ -90,6 +103,32 @@ private struct OpenSheet: View {
     @Bindable var model: AppModel
     @State private var url = ""
     @State private var keyPath = ""
+    @State private var opening = false
+    @State private var hostKeyIssue: HostKeyIssue?
+    @State private var pendingTarget: SFTPTarget?
+
+    private func play() {
+        opening = true
+        Task {
+            defer { opening = false }
+            switch await model.open(urlString: url, keyPath: keyPath) {
+            case .started: model.showOpenSheet = false
+            case .failed: break
+            case .hostKey(let issue, let target): pendingTarget = target; hostKeyIssue = issue
+            }
+        }
+    }
+
+    private func trustAndPlay(_ fingerprint: HostKeyFingerprint) {
+        guard let target = pendingTarget else { return }
+        Task {
+            if let failure = await model.trust(fingerprint, target: target) {
+                model.openError = failure.description
+            } else {
+                play()
+            }
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -104,13 +143,17 @@ private struct OpenSheet: View {
             HStack {
                 Spacer()
                 Button("Cancel") { model.showOpenSheet = false }.keyboardShortcut(.cancelAction)
-                Button("Play") {
-                    if model.open(urlString: url, keyPath: keyPath) { model.showOpenSheet = false }
-                }
-                .keyboardShortcut(.defaultAction).disabled(url.isEmpty)
+                if opening { ProgressView().controlSize(.small) }
+                Button("Play") { play() }
+                    .keyboardShortcut(.defaultAction).disabled(url.isEmpty || opening)
             }
         }
         .padding(20).frame(width: 520)
-        .onAppear { keyPath = model.defaultKeyPath; model.openError = nil }
+        .hostKeyDialog($hostKeyIssue, onTrust: trustAndPlay)
+        .onAppear {
+            keyPath = model.defaultKeyPath
+            model.openError = nil
+            if let prefill = model.openPrefill { url = prefill; model.openPrefill = nil }
+        }
     }
 }

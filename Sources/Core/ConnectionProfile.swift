@@ -32,4 +32,26 @@ public struct ConnectionProfile: Codable, Identifiable, Equatable, Sendable {
         let hostPort = port == 22 ? host : "\(host):\(port)"
         return "sftp://\(username)@\(hostPort)\(remote.hasPrefix("/") ? remote : "/" + remote)"
     }
+
+    /// What is wrong with the profile, or nil if it can be saved and used.
+    public var validationError: String? {
+        if host.trimmingCharacters(in: .whitespaces).isEmpty { return "Enter a host name." }
+        if username.trimmingCharacters(in: .whitespaces).isEmpty { return "Enter a user name." }
+        if !(1...65535).contains(port) { return "Port must be between 1 and 65535." }
+        if case .key(let path) = auth, path.trimmingCharacters(in: .whitespaces).isEmpty { return "Choose a key file." }
+        return nil
+    }
+
+    /// Connection settings for `path`; `secret` is the password, or the key passphrase for key auth.
+    public func target(path: String? = nil, secret: String?) -> SFTPTarget {
+        let remote = path ?? defaultDirectory ?? "/"
+        let secret = (secret?.isEmpty ?? true) ? nil : secret
+        switch auth {
+        case .password:
+            return SFTPTarget(host: host, port: port, user: username, path: remote, password: secret)
+        case .key(let keyPath):
+            return SFTPTarget(host: host, port: port, user: username, path: remote,
+                              keyPath: (keyPath as NSString).expandingTildeInPath, passphrase: secret)
+        }
+    }
 }

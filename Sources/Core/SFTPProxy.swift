@@ -12,9 +12,20 @@ public struct SFTPTarget: Sendable {
     public let user: String
     public let path: String
     public let keyPath: String?
+    /// Account password; when set, password auth is used instead of keys.
+    public let password: String?
+    /// Passphrase for an encrypted key.
+    public let passphrase: String?
 
-    public init(host: String, port: Int = 22, user: String, path: String = "/", keyPath: String? = nil) {
+    public init(host: String, port: Int = 22, user: String, path: String = "/", keyPath: String? = nil,
+                password: String? = nil, passphrase: String? = nil) {
         self.host = host; self.port = port; self.user = user; self.path = path; self.keyPath = keyPath
+        self.password = password; self.passphrase = passphrase
+    }
+
+    /// The same server and credentials for a different remote path.
+    public func with(path: String) -> SFTPTarget {
+        SFTPTarget(host: host, port: port, user: user, path: path, keyPath: keyPath, password: password, passphrase: passphrase)
     }
 
     /// Parses `sftp://user@host[:port]/path` without percent-decoding (names may contain spaces and brackets).
@@ -32,13 +43,21 @@ public struct SFTPTarget: Sendable {
         self.port = parts.count > 1 ? Int(parts[1]) ?? 22 : 22
         self.path = String(rest[slash...])
         self.keyPath = keyPath
+        self.password = nil
+        self.passphrase = nil
     }
 }
 
 public struct Failure: Error, ExpressibleByStringLiteral, CustomStringConvertible, Sendable {
     public let description: String
-    public init(stringLiteral value: String) { description = value }
-    public init(_ value: String) { description = value }
+    /// Set when the server's host key is not trusted yet or has changed.
+    public let hostKey: HostKeyIssue?
+    /// False for failures a retry cannot fix (and could trip login lockouts): host key and authentication.
+    public let retryable: Bool
+    public init(stringLiteral value: String) { description = value; hostKey = nil; retryable = true }
+    public init(_ value: String, hostKey: HostKeyIssue? = nil, retryable: Bool = true) {
+        description = value; self.hostKey = hostKey; self.retryable = retryable
+    }
 }
 
 func log(_ message: String) {
@@ -56,19 +75,52 @@ final class SFTPSession {
         String(cString: ssh_get_error(UnsafeMutableRawPointer(s)))
     }
 
-    /// Connects, verifies the host key against known_hosts, and authenticates. Returns a reason on failure.
+    /// Options shared by every connection. The user's ssh config is ignored so behaviour is the same on every machine.
+    static func configure(_ s: ssh_session, _ t: SFTPTarget) {
+        var port = UInt32(t.port)
+        var timeout: Int = 15
+        var processConfig = false
+        ssh_options_set(s, SSH_OPTIONS_PROCESS_CONFIG, &processConfig)
+        ssh_options_set(s, SSH_OPTIONS_HOST, t.host)
+        ssh_options_set(s, SSH_OPTIONS_PORT, &port)
+        ssh_options_set(s, SSH_OPTIONS_USER, t.user)
+        ssh_options_set(s, SSH_OPTIONS_TIMEOUT, &timeout)
+        ssh_options_set(s, SSH_OPTIONS_KNOWNHOSTS, KnownHosts.path)
+        if let key = t.keyPath { ssh_options_set(s, SSH_OPTIONS_ADD_IDENTITY, key) }
+    }
+
+    /// nil when the server's key is trusted; otherwise why not.
+    private static func hostKeyFailure(_ s: ssh_session, _ t: SFTPTarget) -> Failure? {
+        let fingerprint = KnownHosts.fingerprint(of: s, host: t.host, port: t.port)
+        switch ssh_session_is_known_server(s) {
+        case SSH_KNOWN_HOSTS_OK:
+            return nil
+        case SSH_KNOWN_HOSTS_UNKNOWN, SSH_KNOWN_HOSTS_NOT_FOUND:
+            guard let fingerprint else { return Failure("Could not read the server's host key.", retryable: false) }
+            return Failure("The server \(fingerprint.hostLabel) is not trusted yet.", hostKey: .unknown(fingerprint), retryable: false)
+        case SSH_KNOWN_HOSTS_CHANGED, SSH_KNOWN_HOSTS_OTHER:
+            guard let fingerprint else { return Failure("The server's host key changed.", retryable: false) }
+            return Failure("The host key for \(fingerprint.hostLabel) has changed.", hostKey: .changed(fingerprint), retryable: false)
+        default:
+            return Failure("Host key check failed: \(sshError(s))", retryable: false)
+        }
+    }
+
+    /// Connects, verifies the host key against the app's known hosts, and authenticates. Returns a reason on failure.
     static func connect(_ t: SFTPTarget) -> Result<SFTPSession, Failure> {
         guard let s = ssh_new() else { return .failure("ssh_new failed") }
         let session = SFTPSession()
         session.ssh = s
-        var port = UInt32(t.port)
-        ssh_options_set(s, SSH_OPTIONS_HOST, t.host)
-        ssh_options_set(s, SSH_OPTIONS_PORT, &port)
-        ssh_options_set(s, SSH_OPTIONS_USER, t.user)
-        if let key = t.keyPath { ssh_options_set(s, SSH_OPTIONS_ADD_IDENTITY, key) }
+        configure(s, t)
         guard ssh_connect(s) == SSH_OK else { return .failure(Failure("connect: \(sshError(s))")) }
-        guard ssh_session_is_known_server(s) == SSH_KNOWN_HOSTS_OK else { return .failure("host key not in known_hosts; connect once with ssh first") }
-        guard ssh_userauth_publickey_auto(s, nil, nil) == Int32(SSH_AUTH_SUCCESS.rawValue) else { return .failure(Failure("public key auth failed: \(sshError(s))")) }
+        if let failure = hostKeyFailure(s, t) { return .failure(failure) }
+        let authenticated: Bool
+        if let password = t.password {
+            authenticated = ssh_userauth_password(s, nil, password) == Int32(SSH_AUTH_SUCCESS.rawValue)
+        } else {
+            authenticated = ssh_userauth_publickey_auto(s, nil, t.passphrase) == Int32(SSH_AUTH_SUCCESS.rawValue)
+        }
+        guard authenticated else { return .failure(Failure("authentication failed: \(sshError(s))", retryable: false)) }
         guard let sf = sftp_new(s), sftp_init(sf) == SSH_OK else { return .failure(Failure("sftp init: \(sshError(s))")) }
         session.sftp = sf
         return .success(session)
@@ -155,7 +207,9 @@ public final class SFTPSessionPool {
     private let lock = NSLock()
     private var idle: [SFTPSession] = []
 
-    public init(_ target: SFTPTarget) { self.target = target }
+    private let attempts: Int
+
+    public init(_ target: SFTPTarget, attempts: Int = 3) { self.target = target; self.attempts = attempts }
 
     /// Runs `body` with exclusive use of a session; the session returns to the pool unless `broken`.
     func withSession<T>(_ body: (SFTPSession) -> T) -> Result<T, Failure> {
@@ -164,12 +218,13 @@ public final class SFTPSessionPool {
         lock.lock(); let reused = idle.popLast(); lock.unlock()
         var session = reused
         var lastError: Failure = "no attempts"
-        for attempt in 0..<3 where session == nil {
+        attempts: for attempt in 0..<attempts where session == nil {
             switch SFTPSession.connect(target) {
             case .success(let s): session = s
             case .failure(let e):
                 lastError = e
-                log("\(e.description) (attempt \(attempt + 1)/3)")
+                if !e.retryable { break attempts }
+                log("\(e.description) (attempt \(attempt + 1)/\(attempts))")
                 Thread.sleep(forTimeInterval: 0.5 * Double(attempt + 1))
             }
         }
@@ -204,6 +259,17 @@ public final class SFTPProxy {
     }
 
     /// Loopback URL for a remote file. The random token keeps other local processes from reading the server through the proxy.
+    /// Connects and authenticates once so host-key and credential problems surface before playback starts.
+    public func preflight() async -> Failure? {
+        let pool = pool
+        return await Task.detached {
+            switch pool.withSession({ _ in () }) {
+            case .failure(let e): return e
+            case .success: return nil
+            }
+        }.value
+    }
+
     public func url(for remotePath: String) -> String {
         let encoded = remotePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? remotePath
         return "http://127.0.0.1:\(port)/\(token)\(encoded.hasPrefix("/") ? encoded : "/" + encoded)"

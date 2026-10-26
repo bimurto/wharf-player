@@ -1,6 +1,7 @@
 import AppKit
 import OpenGL.GL3
 import CMPV
+import Core
 
 // Phase 0 spike: render one mpv stream (URL from SPIKE_URL) into an NSOpenGLView.
 // Credentials come from the environment only; nothing is logged or stored.
@@ -119,6 +120,21 @@ guard let url = ProcessInfo.processInfo.environment["SPIKE_URL"] else {
 }
 
 let env = ProcessInfo.processInfo.environment
+if let dir = env["SPIKE_LIST"], let target = SFTPTarget(url, keyPath: env["SPIKE_KEY"]) {
+    let browser = SFTPBrowser(pool: SFTPSessionPool(target))
+    Task {
+        switch await browser.list(dir) {
+        case .success(let entries):
+            for e in Library.sorted(entries, by: .modifiedNewest).prefix(8) {
+                print("\(e.isDirectory ? "d" : "-") \(e.size) \(e.modified?.description ?? "-") \(e.name)")
+            }
+            print("total \(entries.count)")
+        case .failure(let f): print("FAILED: \(f)")
+        }
+        exit(0)
+    }
+    RunLoop.main.run()
+}
 var proxy: SFTPProxy?
 var playURL = url
 if env["SPIKE_PROXY"] != nil {
@@ -127,11 +143,12 @@ if env["SPIKE_PROXY"] != nil {
         exit(1)
     }
     proxy = p
-    playURL = "http://127.0.0.1:\(p.port)/media"
+    playURL = p.url(for: target.path)
 }
 
 if env["SPIKE_HEADLESS"] != nil, let proxy {
     print("PORT=\(proxy.port)")
+    print("URL=\(playURL)")
     fflush(stdout)
     RunLoop.main.run()
 }

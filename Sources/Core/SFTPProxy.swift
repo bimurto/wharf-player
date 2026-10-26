@@ -6,15 +6,19 @@ import CLibSSH
 // keeping many SFTP reads in flight (FFmpeg's libssh reader issues them one at a time).
 // Host keys are checked against ~/.ssh/known_hosts; auth uses SPIKE_KEY or ssh-agent/default keys.
 
-struct SFTPTarget {
-    let host: String
-    let port: Int
-    let user: String
-    let path: String
-    let keyPath: String?
+public struct SFTPTarget: Sendable {
+    public let host: String
+    public let port: Int
+    public let user: String
+    public let path: String
+    public let keyPath: String?
+
+    public init(host: String, port: Int = 22, user: String, path: String = "/", keyPath: String? = nil) {
+        self.host = host; self.port = port; self.user = user; self.path = path; self.keyPath = keyPath
+    }
 
     /// Parses `sftp://user@host[:port]/path` without percent-decoding (names may contain spaces and brackets).
-    init?(_ raw: String, keyPath: String?) {
+    public init?(_ raw: String, keyPath: String?) {
         guard raw.hasPrefix("sftp://") else { return nil }
         let rest = raw.dropFirst("sftp://".count)
         guard let slash = rest.firstIndex(of: "/") else { return nil }
@@ -31,18 +35,18 @@ struct SFTPTarget {
     }
 }
 
-struct Failure: Error, ExpressibleByStringLiteral, CustomStringConvertible {
-    let description: String
-    init(stringLiteral value: String) { description = value }
-    init(_ value: String) { description = value }
+public struct Failure: Error, ExpressibleByStringLiteral, CustomStringConvertible, Sendable {
+    public let description: String
+    public init(stringLiteral value: String) { description = value }
+    public init(_ value: String) { description = value }
 }
 
-private func log(_ message: String) {
+func log(_ message: String) {
     FileHandle.standardError.write(Data("[proxy] \(message)\n".utf8))
 }
 
 /// One authenticated SSH+SFTP session. Not thread-safe: owned by one request at a time.
-private final class SFTPSession {
+final class SFTPSession {
     private var ssh: ssh_session?
     private var sftp: sftp_session?
     /// Set when a read failed or the stream was cut with unread data; such a session is not reused.
@@ -86,6 +90,33 @@ private final class SFTPSession {
         return .success((f, attrs.pointee.size))
     }
 
+    /// Lists a directory, resolving symlinks so linked folders show as folders.
+    func list(_ path: String) -> Result<[RemoteEntry], Failure> {
+        guard let sftp, let ssh else { return .failure("session closed") }
+        guard let dir = sftp_opendir(sftp, path) else {
+            return .failure(Failure("list \(path): sftp error \(sftp_get_error(sftp)), \(SFTPSession.sshError(ssh))"))
+        }
+        defer { sftp_closedir(dir) }
+        var entries: [RemoteEntry] = []
+        while let attrs = sftp_readdir(sftp, dir) {
+            defer { sftp_attributes_free(attrs) }
+            let name = String(cString: attrs.pointee.name)
+            if name == "." || name == ".." { continue }
+            var type = attrs.pointee.type
+            var size = attrs.pointee.size
+            var mtime = attrs.pointee.mtime
+            if type == UInt8(SSH_FILEXFER_TYPE_SYMLINK),
+               let target = sftp_stat(sftp, (path.hasSuffix("/") ? path : path + "/") + name) {
+                type = target.pointee.type; size = target.pointee.size; mtime = target.pointee.mtime
+                sftp_attributes_free(target)
+            }
+            entries.append(RemoteEntry(name: name, isDirectory: type == UInt8(SSH_FILEXFER_TYPE_DIRECTORY), size: size,
+                                       modified: mtime == 0 ? nil : Date(timeIntervalSince1970: TimeInterval(mtime))))
+        }
+        if sftp_dir_eof(dir) == 0 { broken = true; return .failure(Failure("list \(path): read interrupted")) }
+        return .success(entries)
+    }
+
     /// Reads [start, end) in order with up to `depth` requests in flight; `emit` returns false to stop.
     /// Always drains outstanding requests and closes the handle so the session stays usable.
     func stream(_ file: sftp_file, start: UInt64, end: UInt64, chunk: Int, depth: Int, emit: (Data) -> Bool) {
@@ -118,13 +149,13 @@ private final class SFTPSession {
 }
 
 /// Reuses authenticated sessions (seedboxes often limit simultaneous logins) and retries connects.
-private final class SFTPSessionPool {
-    private let target: SFTPTarget
+public final class SFTPSessionPool {
+    let target: SFTPTarget
     private let slots = DispatchSemaphore(value: 3)
     private let lock = NSLock()
     private var idle: [SFTPSession] = []
 
-    init(_ target: SFTPTarget) { self.target = target }
+    public init(_ target: SFTPTarget) { self.target = target }
 
     /// Runs `body` with exclusive use of a session; the session returns to the pool unless `broken`.
     func withSession<T>(_ body: (SFTPSession) -> T) -> Result<T, Failure> {
@@ -149,16 +180,17 @@ private final class SFTPSessionPool {
     }
 }
 
-final class SFTPProxy {
-    private let target: SFTPTarget
+public final class SFTPProxy {
     private let pool: SFTPSessionPool
+    private let token = UUID().uuidString
     private let listener: NWListener
     private let workers = DispatchQueue(label: "proxy.workers", attributes: .concurrent)
-    private(set) var port: UInt16 = 0
+    public private(set) var port: UInt16 = 0
 
-    init?(target: SFTPTarget) {
-        self.target = target
-        pool = SFTPSessionPool(target)
+    public convenience init?(target: SFTPTarget) { self.init(pool: SFTPSessionPool(target)) }
+
+    public init?(pool: SFTPSessionPool) {
+        self.pool = pool
         let params = NWParameters.tcp
         params.requiredLocalEndpoint = .hostPort(host: .ipv4(.loopback), port: .any)
         guard let l = try? NWListener(using: params) else { return nil }
@@ -169,6 +201,19 @@ final class SFTPProxy {
         l.start(queue: workers)
         guard ready.wait(timeout: .now() + 5) == .success, let p = l.port?.rawValue else { return nil }
         port = p
+    }
+
+    /// Loopback URL for a remote file. The random token keeps other local processes from reading the server through the proxy.
+    public func url(for remotePath: String) -> String {
+        let encoded = remotePath.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? remotePath
+        return "http://127.0.0.1:\(port)/\(token)\(encoded.hasPrefix("/") ? encoded : "/" + encoded)"
+    }
+
+    /// Extracts the remote path from the request line, or nil if the token is missing.
+    private func remotePath(in head: String) -> String? {
+        let parts = head.prefix(while: { $0 != "\r" && $0 != "\n" }).split(separator: " ")
+        guard parts.count >= 2, parts[1].hasPrefix("/\(token)/") else { return nil }
+        return String(parts[1].dropFirst(token.count + 1)).removingPercentEncoding
     }
 
     private func accept(_ conn: NWConnection) {
@@ -182,8 +227,12 @@ final class SFTPProxy {
     private func respond(_ conn: NWConnection, head: String) {
         defer { conn.cancel() }
         let isHead = head.hasPrefix("HEAD ")
+        guard let path = remotePath(in: head) else {
+            send(conn, "HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+            return
+        }
         let outcome: Result<String?, Failure> = pool.withSession { session in
-            switch session.open(self.target.path) {
+            switch session.open(path) {
             case .failure(let e):
                 // A failed open may mean the pooled session went stale; do not return it to the pool.
                 session.broken = true

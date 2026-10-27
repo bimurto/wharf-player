@@ -1,6 +1,6 @@
 # Phase 2: Packaging and release
 
-In progress: P2-1 to P2-3 built, needs manual check. Today the app only runs through `swift run`, using Homebrew's libmpv and libssh.
+In progress: P2-1 to P2-4 built, needs manual check. Today the app only runs through `swift run`, using Homebrew's libmpv and libssh.
 
 ## Goal
 
@@ -28,7 +28,6 @@ Ship a self-contained `Wharf.app` (and DMG) for macOS that runs on a Mac with no
 ## Open questions
 
 - Apple Silicon only, or also Intel (universal libraries)?
-- GPL relicense versus a non-GPL mpv/FFmpeg build (build effort versus licence freedom).
 
 ## Decisions
 
@@ -36,3 +35,4 @@ Ship a self-contained `Wharf.app` (and DMG) for macOS that runs on a Mac with no
 - **Bundle identifier:** `io.bimurto.wharf`.
 - **Minimum macOS:** 26.0, because the Homebrew libmpv/FFmpeg/libssh/libass closure is built for 26.0. Revisit only if older macOS is needed.
 - **Still to migrate (P2-06):** the Keychain service `com.bimurto.sftp-media-player` and the `Application Support/SFTP Media Player/` folder (known hosts) keep their old names until a migration exists, so saved passwords and trusted host keys are not orphaned.
+- **Licence (P2-04):** GPL-3.0. Homebrew's mpv is GPL and its FFmpeg is `--enable-gpl --enable-version3`, so the bundle is GPL-3.0-or-later; relicensing is cheaper than a non-GPL build. The app ships `LICENSE`, `THIRD-PARTY-NOTICES.md`, `SOURCE-OFFER.md` and per-package licence files (`Resources/Licenses/`). Owner must fill the repository URL and contact placeholders in `SOURCE-OFFER.md` before any public release.

@@ -55,7 +55,7 @@ One folder per phase. Each has a `README.md` with the requirements and one file 
 | [P2-01](phase-2-packaging/P2-01-real-app-bundle.md) | Real app bundle | Built, needs manual check |
 | [P2-02](phase-2-packaging/P2-02-bundle-libmpv-and-its-dylibs.md) | Bundle libmpv and its dylibs | Built, needs manual check |
 | [P2-03](phase-2-packaging/P2-03-rewrite-install-names-and-verify.md) | Rewrite install names and verify | Built, needs manual check |
-| [P2-04](phase-2-packaging/P2-04-decide-the-licence.md) | Decide the licence | Todo |
+| [P2-04](phase-2-packaging/P2-04-decide-the-licence.md) | Decide the licence | Built, owner must fill placeholders |
 | [P2-05](phase-2-packaging/P2-05-ad-hoc-code-signing.md) | Ad-hoc code signing | Todo |
 | [P2-06](phase-2-packaging/P2-06-bundle-identifier-for-stored-data.md) | Bundle identifier for stored data | Todo |
 | [P2-07](phase-2-packaging/P2-07-dmg.md) | DMG | Todo |

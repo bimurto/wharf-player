@@ -9,6 +9,18 @@ final class MPVPlayer {
     var position: Double = 0
     var duration: Double = 0
     var paused = true
+    @ObservationIgnored private var displayActivity: NSObjectProtocol?
+
+    /// Stops macOS dimming the screen and starting the screen saver while a video plays.
+    private func keepDisplayAwake(_ awake: Bool) {
+        if awake, displayActivity == nil {
+            displayActivity = ProcessInfo.processInfo.beginActivity(
+                options: [.idleDisplaySleepDisabled, .userInitiated], reason: "Playing video")
+        } else if !awake, let activity = displayActivity {
+            ProcessInfo.processInfo.endActivity(activity)
+            displayActivity = nil
+        }
+    }
     var volume: Double = 100
     var speed: Double = 1
     var title = ""
@@ -194,6 +206,7 @@ final class MPVPlayer {
             }
         } else if prop.format == MPV_FORMAT_FLAG, name == "pause" {
             paused = data.assumingMemoryBound(to: Int32.self).pointee != 0
+            keepDisplayAwake(!paused)
         } else if prop.format == MPV_FORMAT_STRING,
                   let cstr = data.assumingMemoryBound(to: UnsafePointer<CChar>?.self).pointee {
             // mpv hands the node property `track-list` over as JSON.

@@ -7,7 +7,7 @@ This file is the written offer required by section 6 of that licence.
 
 The complete source of Wharf, including the scripts that build `Wharf.app`, is in this repository:
 
-**`<REPOSITORY URL>`** (placeholder: the owner must fill this in before any public release)
+**<https://github.com/bimurto/wharf-player>**
 
 ## Bundled libraries
 

@@ -55,7 +55,7 @@ struct LibraryPanel: View {
                 ForEach(Array(library.breadcrumbs.enumerated()), id: \.element.id) { index, crumb in
                     if index > 1 { Text("/").foregroundStyle(.secondary).accessibilityHidden(true) }
                     Button(crumb.name) { Task { await library.load(crumb.path) } }
-                        .buttonStyle(.link)
+                        .buttonStyle(.plain).foregroundStyle(Theme.gold)
                         .accessibilityLabel(crumb.path == "/" ? "Root folder" : "Folder \(crumb.name)")
                 }
             }

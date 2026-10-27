@@ -15,6 +15,8 @@ final class MPVPlayer {
     var isLoaded = false
     /// Embedded subtitle tracks of the current file; empty until mpv reports them.
     var subtitleTracks: [SubtitleTrack] = []
+    /// Audio tracks of the current file; empty until mpv reports them.
+    var audioTracks: [AudioTrack] = []
     /// True once the user picked a track or Off for the current file; reset on load.
     /// Later automatic choices (external subtitle discovery, P1-24) must not override it.
     private(set) var userChoseSubtitle = false
@@ -60,16 +62,19 @@ final class MPVPlayer {
 
     // MARK: Commands
 
-    func load(_ url: String, start: Double? = nil) {
+    /// Starts `url` at `start` seconds with audio track `audioTrack`, when given.
+    func load(_ url: String, start: Double? = nil, audioTrack: Int? = nil) {
         isLoaded = false
         errorMessage = nil
         position = start ?? 0
         duration = 0
         subtitleTracks = []
+        audioTracks = []
         userChoseSubtitle = false
         subtitleError = nil
         setDouble("sub-delay", 0)
-        command(["loadfile", url, "replace", "-1"] + (start.map { ["start=\($0)"] } ?? []))
+        let options = (start.map { ["start=\($0)"] } ?? []) + (audioTrack.map { ["aid=\(AudioTrack.aidArgument($0))"] } ?? [])
+        command(["loadfile", url, "replace", "-1"] + (options.isEmpty ? [] : [options.joined(separator: ",")]))
     }
 
     func togglePause() { command(["cycle", "pause"]) }
@@ -83,6 +88,9 @@ final class MPVPlayer {
         userChoseSubtitle = true
         command(["set", "sid", SubtitleTrack.sidArgument(id)])
     }
+
+    /// Plays audio track `id`. The track-list observer updates `selected`.
+    func setAudioTrack(_ id: Int) { command(["set", "aid", AudioTrack.aidArgument(id)]) }
 
     /// Moves subtitles one step earlier (-1) or later (+1); the `sub-delay` observer updates `subtitleDelay`.
     func stepSubtitleDelay(_ direction: Int) {
@@ -190,7 +198,11 @@ final class MPVPlayer {
                   let cstr = data.assumingMemoryBound(to: UnsafePointer<CChar>?.self).pointee {
             // mpv hands the node property `track-list` over as JSON.
             if name == "media-title" { title = String(cString: cstr) }
-            else if name == "track-list" { subtitleTracks = SubtitleTrack.parse(String(cString: cstr)) }
+            else if name == "track-list" {
+                let json = String(cString: cstr)
+                subtitleTracks = SubtitleTrack.parse(json)
+                audioTracks = AudioTrack.parse(json)
+            }
         }
     }
 }

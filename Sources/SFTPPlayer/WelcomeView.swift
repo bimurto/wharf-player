@@ -15,6 +15,8 @@ struct WelcomeView: View {
                     Button(panel.rawValue) { model.toggleSidebar(panel) }
                         .buttonStyle(.bordered).controlSize(.large)
                 }
+                Button("Open URL…") { model.showOpenSheet = true }
+                    .buttonStyle(.bordered).controlSize(.large)
             }
             Text(model.servers.isEmpty ? "Start by adding a server." : "Pick a server, then a video.")
                 .font(.callout).foregroundStyle(.secondary)

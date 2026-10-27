@@ -16,7 +16,7 @@ One folder per phase. Each has a `README.md` with the requirements and one file 
 
 ## [Phase 1: MVP feature parity](phase-1-mvp/README.md)
 
-12 of 25 tickets done.
+12 of 26 tickets done.
 
 | Ticket | Title | Status |
 |---|---|---|
@@ -45,6 +45,7 @@ One folder per phase. Each has a `README.md` with the requirements and one file 
 | [P1-23](phase-1-mvp/P1-23-subtitle-size-and-position.md) | Subtitle size and position | Built, needs manual check |
 | [P1-24](phase-1-mvp/P1-24-guard-against-stale-subtitle-discovery.md) | Guard against stale subtitle discovery | Done |
 | [P1-25](phase-1-mvp/P1-25-phase-1-acceptance-run.md) | Phase 1 acceptance run | Todo |
+| [P1-26](phase-1-mvp/P1-26-select-an-audio-track.md) | Select an audio track | Built, needs manual check |
 
 ## [Phase 2: Packaging and release](phase-2-packaging/README.md)
 

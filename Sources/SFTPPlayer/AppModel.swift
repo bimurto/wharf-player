@@ -119,7 +119,8 @@ final class AppModel {
         }
         library.attach(lister: SFTPBrowser(pool: proxy.pool), target: target)
         currentURL = target.displayURL
-        player.load(proxy.url(for: target.path), start: recents.resumePosition(for: target.displayURL))
+        player.load(proxy.url(for: target.path), start: recents.resumePosition(for: target.displayURL),
+                    audioTrack: recents.audioTrack(for: target.displayURL))
         externalSubtitles = []
         let lister = SFTPBrowser(pool: proxy.pool)
         let token = subtitleDiscovery.begin()
@@ -183,7 +184,8 @@ final class AppModel {
         guard let url = currentURL, player.duration > 0 else { return }
         lastSaved = Date()
         let title = player.title.isEmpty ? (url as NSString).lastPathComponent : player.title
-        recents.record(url: url, title: title, position: player.position, duration: player.duration)
+        recents.record(url: url, title: title, position: player.position, duration: player.duration,
+                       audioTrack: player.audioTracks.first(where: \.selected)?.id)
         recentItems = recents.all()
     }
 

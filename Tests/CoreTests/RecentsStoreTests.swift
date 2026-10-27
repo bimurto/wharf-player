@@ -81,6 +81,25 @@ final class RecentsStoreTests: XCTestCase {
         XCTAssertNil(store.resumePosition(for: base + "live"))
     }
 
+    func testAudioTrackIsStoredAndFoundThroughURLVariants() {
+        store.record(url: "sftp://reader@fixture.invalid:22/a.mkv", title: "a", position: 0, duration: 100, audioTrack: 2)
+        XCTAssertEqual(store.audioTrack(for: "sftp://reader:secret@fixture.invalid/a.mkv"), 2)
+        XCTAssertNil(store.audioTrack(for: "sftp://reader@fixture.invalid/other.mkv"))
+    }
+
+    func testAudioTrackIsKeptWhenPositionIsNotResumed() {
+        store.record(url: base + "a", title: "a", position: 99, duration: 100, audioTrack: 3)
+        XCTAssertNil(store.resumePosition(for: base + "a"))
+        XCTAssertEqual(store.audioTrack(for: base + "a"), 3)
+    }
+
+    func testEntryWithoutAudioTrackFromOlderBuildStillLoads() {
+        let old = #"[{"url":"sftp://reader@fixture.invalid/a.mkv","title":"a","lastPlayed":0,"position":30,"duration":100}]"#
+        defaults.set(Data(old.utf8), forKey: "sftp_history")
+        XCTAssertEqual(store.all().count, 1)
+        XCTAssertNil(store.audioTrack(for: "sftp://reader@fixture.invalid/a.mkv"))
+    }
+
     func testClear() {
         record("a")
         store.clear()

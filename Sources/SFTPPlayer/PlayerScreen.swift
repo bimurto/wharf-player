@@ -84,7 +84,7 @@ struct PlayerScreen: View {
 
     private var playerArea: some View {
         ZStack(alignment: .bottom) {
-            MPVVideoView(player: player, onMouseMoved: revealControls)
+            MPVVideoView(player: player, onMouseMoved: revealControls, onClick: { model.showSidebar = false })
             if model.currentURL == nil { WelcomeView(model: model) }
             if let error = player.errorMessage {
                 Text("Playback failed: \(error)")
@@ -100,18 +100,8 @@ struct PlayerScreen: View {
             }
             if model.currentURL != nil && (controlsVisible || player.paused) {
                 ControlsBar(player: player, externalSubtitles: model.externalSubtitles,
-                            onAddSubtitle: model.loadExternalSubtitle).padding(16).transition(.opacity)
-            }
-        }
-        .overlay(alignment: .topLeading) {
-            if controlsVisible || player.paused || model.currentURL == nil {
-                HStack {
-                    ForEach(AppModel.SidebarPanel.allCases, id: \.self) { panel in
-                        Button(panel.rawValue) { model.toggleSidebar(panel) }
-                    }
-                    Button("Open…") { model.showOpenSheet = true }
-                }
-                .padding(12)
+                            onAddSubtitle: model.loadExternalSubtitle,
+                            onToggleSidebar: { model.showSidebar.toggle() }).padding(16).transition(.opacity)
             }
         }
         .background(Theme.black)
@@ -136,6 +126,7 @@ private struct ControlsBar: View {
     /// Subtitle files found on the server beside the video.
     let externalSubtitles: [ExternalSubtitle]
     let onAddSubtitle: (ExternalSubtitle) -> Void
+    let onToggleSidebar: () -> Void
     @State private var scrub: Double?
 
     private static let speeds: [Double] = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -207,8 +198,26 @@ private struct ControlsBar: View {
         .help("Subtitles")
     }
 
+    /// Lists the audio tracks with a checkmark on the playing one; the caller shows it only for 2+ tracks.
+    private var audioMenu: some View {
+        Menu {
+            ForEach(player.audioTracks) { track in
+                Button { player.setAudioTrack(track.id) } label: {
+                    if track.selected { Label(track.label, systemImage: "checkmark") } else { Text(track.label) }
+                }
+            }
+        } label: {
+            Image(systemName: "waveform")
+        }
+        .menuStyle(.button).menuIndicator(.hidden).fixedSize()
+        .help("Audio track")
+    }
+
     var body: some View {
         HStack(spacing: 12) {
+            Button(action: onToggleSidebar) { Image(systemName: "sidebar.left") }
+                .help("Library, Servers and Recents")
+
             Button { player.togglePause() } label: {
                 Image(systemName: player.paused ? "play.fill" : "pause.fill").frame(width: 18)
             }
@@ -230,6 +239,8 @@ private struct ControlsBar: View {
                 ForEach(Self.speeds, id: \.self) { s in Button("\(s.formatted())×") { player.setSpeed(s) } }
             }
             .menuStyle(.button).fixedSize()
+
+            if player.audioTracks.count > 1 { audioMenu }
 
             subtitleMenu
 

@@ -26,6 +26,12 @@ struct SFTPPlayerApp: App {
             CommandGroup(after: .newItem) {
                 Button("Open…") { AppModel.shared.showOpenSheet = true }.keyboardShortcut("o")
             }
+            CommandGroup(after: .sidebar) {
+                ForEach(Array(AppModel.SidebarPanel.allCases.enumerated()), id: \.element) { index, panel in
+                    Button(panel.rawValue) { AppModel.shared.toggleSidebar(panel) }
+                        .keyboardShortcut(KeyEquivalent(Character("\(index + 1)")))
+                }
+            }
         }
     }
 }

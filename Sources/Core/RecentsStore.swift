@@ -6,6 +6,8 @@ public struct RecentItem: Codable, Equatable, Identifiable, Sendable {
     public var lastPlayed: Date
     public var position: TimeInterval
     public var duration: TimeInterval
+    /// mpv's audio track id chosen for this file; nil for entries saved before this existed.
+    public var audioTrack: Int? = nil
     public var id: String { url }
 
     /// Watched fraction from 0 to 1; 0 when the duration is unknown.
@@ -34,9 +36,11 @@ public final class RecentsStore {
     }
 
     /// Adds or updates the entry for `url` and moves it to the front. A password in the URL is dropped.
-    public func record(url: String, title: String, position: TimeInterval, duration: TimeInterval, now: Date = Date()) {
+    public func record(url: String, title: String, position: TimeInterval, duration: TimeInterval,
+                       audioTrack: Int? = nil, now: Date = Date()) {
         let clean = Self.normalized(url)
-        let item = RecentItem(url: clean, title: title, lastPlayed: now, position: position, duration: duration)
+        let item = RecentItem(url: clean, title: title, lastPlayed: now, position: position, duration: duration,
+                              audioTrack: audioTrack)
         var items = all().filter { $0.url != clean }
         items.insert(item, at: 0)
         write(Array(items.prefix(limit)))
@@ -49,6 +53,12 @@ public final class RecentsStore {
         guard let item = all().first(where: { $0.url == clean }),
               item.position >= 5, item.duration > 0, !item.isFinished else { return nil }
         return item.position
+    }
+
+    /// The audio track last used for `url`, kept even when the position is not resumed.
+    public func audioTrack(for url: String) -> Int? {
+        let clean = Self.normalized(url)
+        return all().first(where: { $0.url == clean })?.audioTrack
     }
 
     public func clear() { defaults.removeObject(forKey: key) }

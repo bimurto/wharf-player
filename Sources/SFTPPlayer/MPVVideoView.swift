@@ -9,6 +9,8 @@ final class MPVGLView: NSOpenGLView {
     private var renderCtx: OpaquePointer?
     /// Called on every mouse move over the video, so the controls can reappear.
     var onMouseMoved: (() -> Void)?
+    /// Called on every click on the video.
+    var onClick: (() -> Void)?
 
     init(player: MPVPlayer) {
         self.player = player
@@ -110,6 +112,7 @@ final class MPVGLView: NSOpenGLView {
 
     override func mouseDown(with event: NSEvent) {
         window?.makeFirstResponder(self)
+        onClick?()
         if event.clickCount == 2 { window?.toggleFullScreen(nil) }
     }
 }
@@ -117,12 +120,17 @@ final class MPVGLView: NSOpenGLView {
 struct MPVVideoView: NSViewRepresentable {
     let player: MPVPlayer
     let onMouseMoved: () -> Void
+    let onClick: () -> Void
 
     func makeNSView(context: Context) -> MPVGLView {
         let view = MPVGLView(player: player)
         view.onMouseMoved = onMouseMoved
+        view.onClick = onClick
         return view
     }
 
-    func updateNSView(_ view: MPVGLView, context: Context) { view.onMouseMoved = onMouseMoved }
+    func updateNSView(_ view: MPVGLView, context: Context) {
+        view.onMouseMoved = onMouseMoved
+        view.onClick = onClick
+    }
 }

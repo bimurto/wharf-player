@@ -15,6 +15,7 @@ Version 1.0.0 · macOS · [GPL-3.0-or-later](LICENSE)
 - **Streaming over SFTP.** A local pipelined proxy serves byte ranges to mpv, so seeking works without downloading the file.
 - **Recents with resume.** Picks up where you left off.
 - **Subtitles.** Embedded tracks, external files found next to the video, or a local file you choose. Adjust sync offset, size and position.
+- **Audio tracks.** Files with more than one audio track get a menu to pick one. Wharf remembers the choice per file.
 - **Open by URL.** `Cmd+O`.
 
 ### Player controls
@@ -27,7 +28,7 @@ Version 1.0.0 · macOS · [GPL-3.0-or-later](LICENSE)
 | `F` or double-click | Fullscreen |
 | `Cmd+O` | Open URL |
 
-The speed menu and subtitle menu are in the control bar. Controls hide after 2.8 s without mouse movement while playing.
+The speed, audio track (2+ tracks only) and subtitle menus are in the control bar. Controls hide after 2.8 s without mouse movement while playing.
 
 ## Requirements
 

@@ -34,11 +34,27 @@ The speed, audio track (2+ tracks only) and subtitle menus are in the control ba
 
 - macOS 14 or later to build (`Package.swift`). The built app bundle declares macOS 26 as its minimum (`LSMinimumSystemVersion` in `scripts/build-app.sh`).
 - Swift 5.9 toolchain (Xcode or Command Line Tools)
-- [Homebrew](https://brew.sh) with `mpv` and `libssh`:
+- [Homebrew](https://brew.sh) with `libssh`, plus an `ffmpeg` and `mpv` built with libssh support (next section):
 
 ```sh
-brew install mpv libssh
+brew install libssh
 ```
+
+### FFmpeg and mpv with libssh
+
+The stock Homebrew `ffmpeg` is built without `--enable-libssh`, so build `ffmpeg` and `mpv` from source with it turned on:
+
+1. Run `brew edit ffmpeg`.
+2. Add `depends_on "libssh"` to the `depends_on` lines.
+3. Add `--enable-libssh` to the `args = %W[` list in `def install`.
+4. Build both from source:
+
+```sh
+HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source ffmpeg
+HOMEBREW_NO_INSTALL_FROM_API=1 brew install --build-from-source mpv
+```
+
+`mpv` is rebuilt so it links against the new `ffmpeg`. A later `brew upgrade ffmpeg` replaces your edit with the stock formula, so repeat these steps after upgrading.
 
 ## Build and run
 

@@ -32,7 +32,7 @@ One folder per phase. Each has a `README.md` with the requirements and one file 
 | [P1-10](phase-1-mvp/P1-10-library-sidebar.md) | Library sidebar | Done |
 | [P1-11](phase-1-mvp/P1-11-library-state-folder-memory-and-stale-responses.md) | Library state: folder memory and stale responses | Done |
 | [P1-12](phase-1-mvp/P1-12-recents-sidebar.md) | Recents sidebar | Done |
-| [P1-13](phase-1-mvp/P1-13-verify-password-authentication-against-a-live-server.md) | Verify password authentication against a live server | Todo |
+| [P1-13](phase-1-mvp/P1-13-verify-password-authentication-against-a-live-server.md) | Verify password authentication against a live server | Partly: success verified by the owner |
 | [P1-14](phase-1-mvp/P1-14-save-the-sidebar-width-between-launches.md) | Save the sidebar width between launches | Built, needs manual check |
 | [P1-15](phase-1-mvp/P1-15-resize-the-sidebar-from-the-keyboard.md) | Resize the sidebar from the keyboard | Built, needs manual check |
 | [P1-16](phase-1-mvp/P1-16-merge-duplicate-recents.md) | Merge duplicate recents | Done |

@@ -23,7 +23,7 @@ In scope: everything below. Out of scope: Windows and Linux, picture-in-picture 
 | P1-S4 | Use makes a server the current connection and opens the Library at its default directory | Done |
 | P1-S5 | Delete asks for confirmation and removes the Keychain item | Done |
 | P1-S6 | Trust on first use for host keys: the first connection shows the SHA256 fingerprint and asks; a changed key is refused with no override; Forget Host Key resets it deliberately. Uses an app-owned known-hosts file, never `~/.ssh/known_hosts` | Done (not in the original plan) |
-| P1-S7 | Password authentication works against a live server | Built; **not verified live** |
+| P1-S7 | Password authentication works against a live server | Success path verified live by the owner; wrong-password behaviour not checked |
 
 ### Library
 

@@ -14,7 +14,7 @@ struct SFTPPlayerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        Window("SFTP Media Player", id: "player") {
+        Window("Wharf", id: "player") {
             PlayerScreen(model: .shared).frame(minWidth: 640, minHeight: 360)
         }
         .commands {

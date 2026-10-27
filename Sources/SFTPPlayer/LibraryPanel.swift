@@ -96,7 +96,7 @@ struct LibraryPanel: View {
         } label: {
             HStack(spacing: 8) {
                 Image(systemName: entry.isDirectory ? "folder.fill" : entry.isVideo ? "film" : "doc")
-                    .foregroundStyle(entry.isDirectory ? Color.accentColor : .secondary).frame(width: 18)
+                    .foregroundStyle(entry.isDirectory ? Theme.gold : .secondary).frame(width: 18)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(entry.name).lineLimit(1).truncationMode(.middle)
                     Text(detail(entry)).font(.caption).foregroundStyle(.secondary)

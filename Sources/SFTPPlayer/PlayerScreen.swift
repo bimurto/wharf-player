@@ -48,7 +48,7 @@ struct PlayerScreen: View {
             model.sidebarWidth.save(sidebarWidth)
         }
         return Rectangle()
-            .fill(dividerFocused ? Color.accentColor : Color(nsColor: .separatorColor))
+            .fill(dividerFocused ? Theme.gold : Color(nsColor: .separatorColor))
             .frame(width: dividerFocused ? 3 : 1)
             .padding(.horizontal, 4)
             .contentShape(Rectangle())
@@ -85,6 +85,7 @@ struct PlayerScreen: View {
     private var playerArea: some View {
         ZStack(alignment: .bottom) {
             MPVVideoView(player: player, onMouseMoved: revealControls)
+            if model.currentURL == nil { WelcomeView(model: model) }
             if let error = player.errorMessage {
                 Text("Playback failed: \(error)")
                     .padding(10).background(.red.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
@@ -113,11 +114,10 @@ struct PlayerScreen: View {
                 .padding(12)
             }
         }
-        .background(.black)
+        .background(Theme.black)
         .onContinuousHover { if case .active = $0 { revealControls() } }
         .onChange(of: player.position) { model.saveProgressThrottled() }
         .sheet(isPresented: $model.showOpenSheet) { OpenSheet(model: model) }
-        .onAppear { if model.currentURL == nil { model.showOpenSheet = true } }
     }
 
     /// Shows the controls and hides them again after 2.8 s of no mouse movement.

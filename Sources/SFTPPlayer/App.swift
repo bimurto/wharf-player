@@ -20,6 +20,7 @@ struct SFTPPlayerApp: App {
     var body: some Scene {
         Window("Wharf", id: "player") {
             PlayerScreen(model: .shared).frame(minWidth: 640, minHeight: 360)
+                .tint(Theme.gold).preferredColorScheme(.dark)
         }
         .commands {
             CommandGroup(after: .newItem) {

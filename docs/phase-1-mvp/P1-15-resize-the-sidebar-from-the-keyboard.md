@@ -1,6 +1,6 @@
 # P1-15: Resize the sidebar from the keyboard
 
-**Status:** Todo  
+**Status:** Built, needs manual check  
 **Requirements:** P1-B2  
 **Depends on:** P1-14  
 
@@ -15,5 +15,7 @@ Match the Electron app's keyboard resizing.
 - [ ] Accessible label on the divider
 
 ## Notes
+
+Done with a custom divider (`HStack` in `PlayerScreen`) replacing `HSplitView`; dragging now saves on release (P1-14).
 
 SwiftUI's `HSplitView` has no keyboard resize; may need a custom divider.

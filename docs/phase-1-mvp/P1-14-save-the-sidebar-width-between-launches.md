@@ -1,6 +1,6 @@
 # P1-14: Save the sidebar width between launches
 
-**Status:** Todo  
+**Status:** Built, needs manual check  
 **Requirements:** P1-B2  
 **Depends on:** P1-10  
 

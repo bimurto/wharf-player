@@ -44,6 +44,28 @@ final class RecentsStoreTests: XCTestCase {
         XCTAssertEqual(store.resumePosition(for: "sftp://reader:secret@fixture.invalid/a.mkv"), 30)
     }
 
+    func testDefaultPortIsNormalizedWhenRecordingAndLookingUp() {
+        store.record(url: "sftp://reader@fixture.invalid:22/a.mkv", title: "a", position: 30, duration: 100)
+        XCTAssertEqual(store.all().first?.url, "sftp://reader@fixture.invalid/a.mkv")
+        XCTAssertEqual(store.resumePosition(for: "sftp://reader@fixture.invalid/a.mkv"), 30)
+        XCTAssertEqual(store.resumePosition(for: "sftp://reader@fixture.invalid:22/a.mkv"), 30)
+        store.record(url: "sftp://reader@fixture.invalid:2222/a.mkv", title: "a", position: 0, duration: 0)
+        XCTAssertEqual(store.all().count, 2)
+    }
+
+    func testDuplicatesFromOlderBuildAreMergedOnLoadKeepingNewest() throws {
+        func item(_ url: String, _ position: Double, _ t: Double) -> RecentItem {
+            RecentItem(url: url, title: "a", lastPlayed: Date(timeIntervalSince1970: t), position: position, duration: 100)
+        }
+        let stored = [item("sftp://reader@fixture.invalid:22/a.mkv", 70, 5),
+                      item("sftp://reader@fixture.invalid/b.mkv", 1, 4),
+                      item("sftp://reader@fixture.invalid/a.mkv", 20, 3)]
+        defaults.set(try JSONEncoder().encode(stored), forKey: "sftp_history")
+        let all = store.all()
+        XCTAssertEqual(all.map(\.url), ["sftp://reader@fixture.invalid/a.mkv", "sftp://reader@fixture.invalid/b.mkv"])
+        XCTAssertEqual(all.first?.position, 70)
+    }
+
     func testResumeRules() {
         record("early", at: 4)
         record("mid", at: 50)

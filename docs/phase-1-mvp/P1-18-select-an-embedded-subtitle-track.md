@@ -1,6 +1,6 @@
 # P1-18: Select an embedded subtitle track
 
-**Status:** Todo  
+**Status:** Built, needs manual check  
 **Requirements:** P1-T1  
 **Depends on:** P1-17  
 
@@ -10,6 +10,6 @@ Choosing a track or Off changes what is shown.
 
 ## Acceptance criteria
 
-- [ ] Selecting a track sets `sid`; Off sets `sid=no`
-- [ ] The current track is marked in the menu
-- [ ] Image-based tracks (PGS, DVD) are selectable because mpv renders them
+- [x] Selecting a track sets `sid`; Off sets `sid=no`
+- [x] The current track is marked in the menu
+- [x] Image-based tracks (PGS, DVD) are selectable because mpv renders them

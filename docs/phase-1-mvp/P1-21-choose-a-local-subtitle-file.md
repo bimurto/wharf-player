@@ -1,6 +1,6 @@
 # P1-21: Choose a local subtitle file
 
-**Status:** Todo  
+**Status:** Built, needs manual check  
 **Requirements:** P1-T3  
 **Depends on:** P1-18  
 

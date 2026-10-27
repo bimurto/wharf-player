@@ -29,12 +29,13 @@ public final class RecentsStore {
 
     public func all() -> [RecentItem] {
         guard let data = defaults.data(forKey: key) else { return [] }
-        return (try? JSONDecoder().decode([RecentItem].self, from: data)) ?? []
+        let items = (try? JSONDecoder().decode([RecentItem].self, from: data)) ?? []
+        return Self.merged(items)
     }
 
     /// Adds or updates the entry for `url` and moves it to the front. A password in the URL is dropped.
     public func record(url: String, title: String, position: TimeInterval, duration: TimeInterval, now: Date = Date()) {
-        let clean = Self.withoutPassword(url)
+        let clean = Self.normalized(url)
         let item = RecentItem(url: clean, title: title, lastPlayed: now, position: position, duration: duration)
         var items = all().filter { $0.url != clean }
         items.insert(item, at: 0)
@@ -44,7 +45,7 @@ public final class RecentsStore {
     /// Where to resume, or nil to start over: under 5 s in is not worth resuming, and within the last
     /// 10 s (or no known duration to compare against) counts as finished.
     public func resumePosition(for url: String) -> TimeInterval? {
-        let clean = Self.withoutPassword(url)
+        let clean = Self.normalized(url)
         guard let item = all().first(where: { $0.url == clean }),
               item.position >= 5, item.duration > 0, !item.isFinished else { return nil }
         return item.position
@@ -55,6 +56,27 @@ public final class RecentsStore {
     /// `sftp://user:secret@host/x` becomes `sftp://user@host/x`.
     static func withoutPassword(_ url: String) -> String {
         url.replacingOccurrences(of: #"^(\w+://[^:@/]+):[^@/]*@"#, with: "$1@", options: .regularExpression)
+    }
+
+    /// Also drops the default `:22`, so an entry stored by an older build matches the portless URL.
+    static func normalized(_ url: String) -> String {
+        withoutPassword(url).replacingOccurrences(of: #"^(\w+://(?:[^@/]*@)?[^:@/]+):22(?=/|$)"#, with: "$1", options: .regularExpression)
+    }
+
+    /// Collapses entries that normalize to the same URL, keeping the newest one in the position of the first.
+    private static func merged(_ items: [RecentItem]) -> [RecentItem] {
+        var result: [RecentItem] = []
+        var index: [String: Int] = [:]
+        for var item in items {
+            item.url = normalized(item.url)
+            if let i = index[item.url] {
+                if item.lastPlayed > result[i].lastPlayed { result[i] = item }
+            } else {
+                index[item.url] = result.count
+                result.append(item)
+            }
+        }
+        return result
     }
 
     private func write(_ items: [RecentItem]) {

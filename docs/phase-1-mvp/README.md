@@ -57,7 +57,7 @@ In scope: everything below. Out of scope: Windows and Linux, picture-in-picture 
 | P1-R2 | Resume from the saved position, except under 5 s in, within the last 10 s, or with unknown duration | Done |
 | P1-R3 | Passwords are stripped from URLs before storing and when looking up | Done |
 | P1-R4 | Panel shows progress and relative time; Clear asks for confirmation | Done |
-| P1-R5 | Merge stale duplicates (an old entry stored with an explicit `:22`) | Open; Clear removes them |
+| P1-R5 | Merge stale duplicates (an old entry stored with an explicit `:22`) | Done |
 
 ### Subtitles
 
@@ -65,9 +65,9 @@ mpv already renders embedded text and image subtitles (ASS styling, PGS) by defa
 
 | ID | Requirement | Status |
 |---|---|---|
-| P1-T1 | Subtitle menu lists embedded tracks (from mpv's `track-list`) and Off; selecting one sets `sid` | Not started |
-| P1-T2 | Discover external subtitles beside the video and in `Subs`, `Subtitles` and `Sub` folders, filename-prefix matches first; add with `sub-add` | Not started |
-| P1-T3 | Choose a local subtitle file with an open panel | Not started |
+| P1-T1 | Subtitle menu lists embedded tracks (from mpv's `track-list`) and Off; selecting one sets `sid` | Built, needs manual check |
+| P1-T2 | Discover external subtitles beside the video and in `Subs`, `Subtitles` and `Sub` folders, filename-prefix matches first; add with `sub-add` | Built, needs manual check (discovery and loading through the proxy; live check pending) |
+| P1-T3 | Choose a local subtitle file with an open panel | Built, needs manual check |
 | P1-T4 | Sync offset of ±5 s in 0.5 s steps (`sub-delay`) | Not started |
 | P1-T5 | Text size 75–200% (`sub-scale`) and vertical position (`sub-pos`), saved between launches, with a Reset action | Not started |
 | P1-T6 | A late discovery result never overrides a track the user chose | Not started |
@@ -77,7 +77,7 @@ mpv already renders embedded text and image subtitles (ASS styling, PGS) by defa
 | ID | Requirement | Status |
 |---|---|---|
 | P1-B1 | One resizable sidebar with Library, Servers and Recents panels | Done |
-| P1-B2 | Width limited to 320 pt minimum, saved between launches, adjustable from the keyboard | Partly: resizable and limited; saving and keyboard control not done |
+| P1-B2 | Width limited to 320 pt minimum, saved between launches, adjustable from the keyboard | Built, needs manual check (resizable, limited, saved, keyboard control) |
 
 ## Non-functional requirements
 

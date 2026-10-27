@@ -1,15 +1,25 @@
 import SwiftUI
 import Core
+import AppKit
+import UniformTypeIdentifiers
 
 struct PlayerScreen: View {
     @Bindable var model: AppModel
     @State private var controlsVisible = true
     @State private var hideTask: Task<Void, Never>?
+    @State private var sidebarWidth = SidebarWidthStore.defaultWidth
+    @State private var dragStartWidth: Double?
+    @FocusState private var dividerFocused: Bool
 
     private var player: MPVPlayer { model.player }
 
     var body: some View {
-        HSplitView {
+        GeometryReader { window in split(windowWidth: window.size.width) }
+            .onAppear { sidebarWidth = model.sidebarWidth.saved ?? SidebarWidthStore.defaultWidth }
+    }
+
+    private func split(windowWidth: Double) -> some View {
+        HStack(spacing: 0) {
             if model.showSidebar {
                 VStack(spacing: 0) {
                     Picker("Panel", selection: $model.sidebarPanel) {
@@ -23,10 +33,53 @@ struct PlayerScreen: View {
                     case .recents: RecentsPanel(model: model)
                     }
                 }
-                .frame(minWidth: 320, idealWidth: 380, maxWidth: 640)
+                .frame(width: SidebarWidthStore.clamped(sidebarWidth, windowWidth: windowWidth))
+                divider(windowWidth: windowWidth)
             }
             playerArea.frame(minWidth: 480)
         }
+    }
+
+    /// The draggable divider; focus it to resize with the arrow keys (Shift for bigger steps), Home and End.
+    private func divider(windowWidth: Double) -> some View {
+        let current = SidebarWidthStore.clamped(sidebarWidth, windowWidth: windowWidth)
+        func resize(_ action: SidebarWidthStore.Resize, large: Bool = false) {
+            sidebarWidth = SidebarWidthStore.resized(current, action, large: large, windowWidth: windowWidth)
+            model.sidebarWidth.save(sidebarWidth)
+        }
+        return Rectangle()
+            .fill(dividerFocused ? Color.accentColor : Color(nsColor: .separatorColor))
+            .frame(width: dividerFocused ? 3 : 1)
+            .padding(.horizontal, 4)
+            .contentShape(Rectangle())
+            .onHover { if $0 { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() } }
+            .gesture(DragGesture(minimumDistance: 1, coordinateSpace: .global)
+                .onChanged { drag in
+                    let start = dragStartWidth ?? current
+                    dragStartWidth = start
+                    sidebarWidth = SidebarWidthStore.clamped(start + drag.translation.width, windowWidth: windowWidth)
+                }
+                .onEnded { _ in
+                    dragStartWidth = nil
+                    model.sidebarWidth.save(sidebarWidth)
+                })
+            .focusable()
+            .focused($dividerFocused)
+            .focusEffectDisabled()
+            .onKeyPress(.leftArrow, phases: [.down, .repeat]) { press in
+                resize(.narrower, large: press.modifiers.contains(.shift)); return .handled
+            }
+            .onKeyPress(.rightArrow, phases: [.down, .repeat]) { press in
+                resize(.wider, large: press.modifiers.contains(.shift)); return .handled
+            }
+            .onKeyPress(.home) { resize(.minimum); return .handled }
+            .onKeyPress(.end) { resize(.maximum); return .handled }
+            .accessibilityElement()
+            .accessibilityLabel("Sidebar divider")
+            .accessibilityValue("\(Int(current)) points wide")
+            .accessibilityAdjustableAction { direction in
+                resize(direction == .increment ? .wider : .narrower)
+            }
     }
 
     private var playerArea: some View {
@@ -39,8 +92,14 @@ struct PlayerScreen: View {
             } else if model.currentURL != nil && !player.isLoaded {
                 ProgressView().controlSize(.large).frame(maxHeight: .infinity)
             }
+            if let error = player.subtitleError {
+                Text(error)
+                    .padding(8).background(.red.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
+                    .foregroundStyle(.white).frame(maxHeight: .infinity, alignment: .top).padding(.top, 48)
+            }
             if model.currentURL != nil && (controlsVisible || player.paused) {
-                ControlsBar(player: player).padding(16).transition(.opacity)
+                ControlsBar(player: player, externalSubtitles: model.externalSubtitles,
+                            onAddSubtitle: model.loadExternalSubtitle).padding(16).transition(.opacity)
             }
         }
         .overlay(alignment: .topLeading) {
@@ -74,9 +133,55 @@ struct PlayerScreen: View {
 
 private struct ControlsBar: View {
     let player: MPVPlayer
+    /// Subtitle files found on the server beside the video.
+    let externalSubtitles: [ExternalSubtitle]
+    let onAddSubtitle: (ExternalSubtitle) -> Void
     @State private var scrub: Double?
 
     private static let speeds: [Double] = [0.5, 0.75, 1, 1.25, 1.5, 2]
+
+    /// Asks for a local subtitle file and loads it through the same `sub-add` path as server files.
+    private func chooseLocalSubtitle() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = ExternalSubtitles.extensions.sorted().compactMap { UTType(filenameExtension: $0) }
+        panel.message = "Choose a subtitle file"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        _ = player.addSubtitle(url: url.absoluteString, name: url.lastPathComponent)
+    }
+
+    /// Lists embedded and loaded external tracks, Off, and server subtitle files not yet loaded;
+    /// the current choice carries a checkmark.
+    private var subtitleMenu: some View {
+        let tracks = player.subtitleTracks
+        let available = ExternalSubtitles.notLoaded(externalSubtitles, tracks: tracks)
+        return Menu {
+            Text(tracks.isEmpty ? "No subtitles" : "\(tracks.count) subtitle track\(tracks.count == 1 ? "" : "s")")
+            Divider()
+            Button { player.setSubtitle(nil) } label: {
+                if SubtitleTrack.isOff(tracks) { Label("Off", systemImage: "checkmark") } else { Text("Off") }
+            }
+            ForEach(tracks) { track in
+                Button { player.setSubtitle(track.id) } label: {
+                    if track.selected { Label(track.label, systemImage: "checkmark") } else { Text(track.label) }
+                }
+            }
+            Divider()
+            Button("Choose file…") { chooseLocalSubtitle() }
+            if !available.isEmpty {
+                Section("On the server") {
+                    ForEach(available) { sub in
+                        Button(sub.name) { onAddSubtitle(sub) }
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "captions.bubble")
+        }
+        .menuStyle(.button).menuIndicator(.hidden).fixedSize()
+        .help("Subtitles")
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -101,6 +206,8 @@ private struct ControlsBar: View {
                 ForEach(Self.speeds, id: \.self) { s in Button("\(s.formatted())×") { player.setSpeed(s) } }
             }
             .menuStyle(.button).fixedSize()
+
+            subtitleMenu
 
             Button { NSApp.keyWindow?.toggleFullScreen(nil) } label: {
                 Image(systemName: "arrow.up.left.and.arrow.down.right")

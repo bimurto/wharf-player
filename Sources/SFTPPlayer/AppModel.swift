@@ -10,6 +10,8 @@ final class AppModel {
     var showOpenSheet = false
     var openError: String?
     private(set) var currentURL: String?
+    /// External subtitle files found for the current video, best match first.
+    private(set) var externalSubtitles: [ExternalSubtitle] = []
     var servers: [ConnectionProfile] = []
     var activeProfile: ConnectionProfile?
     var showSidebar = false
@@ -21,6 +23,7 @@ final class AppModel {
 
     @ObservationIgnored let profiles = ProfileStore(secrets: KeychainSecretStore())
     @ObservationIgnored private let recents = RecentsStore()
+    @ObservationIgnored let sidebarWidth = SidebarWidthStore()
     @ObservationIgnored private var proxy: SFTPProxy?
     @ObservationIgnored private var proxyKey: String?
     @ObservationIgnored private var lastSaved = Date.distantPast
@@ -116,11 +119,26 @@ final class AppModel {
         library.attach(lister: SFTPBrowser(pool: proxy.pool), target: target)
         currentURL = target.displayURL
         player.load(proxy.url(for: target.path), start: recents.resumePosition(for: target.displayURL))
+        externalSubtitles = []
+        let lister = SFTPBrowser(pool: proxy.pool)
+        Task {
+            let found = await ExternalSubtitles.discover(videoPath: target.path, lister: lister)
+            if currentURL == target.displayURL { externalSubtitles = found }
+        }
         if library.path.isEmpty {
             let folder = (target.path as NSString).deletingLastPathComponent
             Task { await library.load(folder.isEmpty ? "/" : folder) }
         }
         return .started
+    }
+
+    /// Reads `sub` through the loopback proxy and shows it. Failure sets `player.subtitleError`.
+    func loadExternalSubtitle(_ sub: ExternalSubtitle) {
+        guard let proxy else {
+            player.subtitleError = "Could not load \(sub.name): no connection."
+            return
+        }
+        player.addSubtitle(url: proxy.url(for: sub.path), name: sub.name)
     }
 
     /// Plays a video chosen in the Library.

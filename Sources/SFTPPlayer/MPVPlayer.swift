@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import CMPV
+import Core
 
 /// Owns the libmpv handle and publishes playback state. Main-thread only.
 @Observable
@@ -12,7 +13,14 @@ final class MPVPlayer {
     var speed: Double = 1
     var title = ""
     var isLoaded = false
+    /// Embedded subtitle tracks of the current file; empty until mpv reports them.
+    var subtitleTracks: [SubtitleTrack] = []
+    /// True once the user picked a track or Off for the current file; reset on load.
+    /// Later automatic choices (external subtitle discovery, P1-24) must not override it.
+    private(set) var userChoseSubtitle = false
     var errorMessage: String?
+    /// Why the last `sub-add` failed; playback continues. Cleared on load and on the next attempt.
+    var subtitleError: String?
 
     @ObservationIgnored private(set) var handle: OpaquePointer?
     /// Set by the video view so its render context is freed before the mpv handle.
@@ -30,7 +38,8 @@ final class MPVPlayer {
         mpv_initialize(handle)
         for (name, format) in [("time-pos", MPV_FORMAT_DOUBLE), ("duration", MPV_FORMAT_DOUBLE),
                                ("pause", MPV_FORMAT_FLAG), ("volume", MPV_FORMAT_DOUBLE),
-                               ("speed", MPV_FORMAT_DOUBLE), ("media-title", MPV_FORMAT_STRING)] {
+                               ("speed", MPV_FORMAT_DOUBLE), ("media-title", MPV_FORMAT_STRING),
+                               ("track-list", MPV_FORMAT_STRING)] {
             mpv_observe_property(handle, 0, name, format)
         }
         mpv_set_wakeup_callback(handle, { ctx in
@@ -46,6 +55,9 @@ final class MPVPlayer {
         errorMessage = nil
         position = start ?? 0
         duration = 0
+        subtitleTracks = []
+        userChoseSubtitle = false
+        subtitleError = nil
         command(["loadfile", url, "replace", "-1"] + (start.map { ["start=\($0)"] } ?? []))
     }
 
@@ -54,6 +66,25 @@ final class MPVPlayer {
     func seek(by seconds: Double) { command(["seek", String(seconds), "relative"]) }
     func setVolume(_ value: Double) { setDouble("volume", min(max(value, 0), 130)) }
     func setSpeed(_ value: Double) { setDouble("speed", value) }
+
+    /// Shows embedded track `id`, or turns subtitles off when nil. The track-list observer updates `selected`.
+    func setSubtitle(_ id: Int?) {
+        userChoseSubtitle = true
+        command(["set", "sid", SubtitleTrack.sidArgument(id)])
+    }
+
+    /// Adds the subtitle at `url` (a proxy or file URL), selects it and returns true on success.
+    /// A user action: automatic choices must not override it. On failure `subtitleError` says why.
+    /// mpv opens the file during the command, so this waits for the read.
+    @discardableResult
+    func addSubtitle(url: String, name: String) -> Bool {
+        userChoseSubtitle = true
+        subtitleError = nil
+        let code = command(SubtitleTrack.subAddArguments(url: url, name: name))
+        guard code < 0 else { return true }
+        subtitleError = "Could not load \(name): \(String(cString: mpv_error_string(code)))"
+        return false
+    }
 
     func shutdown() {
         guard let h = handle else { return }
@@ -66,11 +97,14 @@ final class MPVPlayer {
 
     // MARK: Internals
 
-    private func command(_ args: [String]) {
-        guard let handle else { return }
+    /// Runs an mpv command; returns its error code (negative) or 0 on success.
+    @discardableResult
+    private func command(_ args: [String]) -> Int32 {
+        guard let handle else { return MPV_ERROR_UNINITIALIZED.rawValue }
         var cargs: [UnsafePointer<CChar>?] = args.map { UnsafePointer(strdup($0)) } + [nil]
-        _ = mpv_command(handle, &cargs)
+        let code = mpv_command(handle, &cargs)
         cargs.forEach { free(UnsafeMutablePointer(mutating: $0)) }
+        return code
     }
 
     private func setDouble(_ name: String, _ value: Double) {
@@ -111,9 +145,11 @@ final class MPVPlayer {
             }
         } else if prop.format == MPV_FORMAT_FLAG, name == "pause" {
             paused = data.assumingMemoryBound(to: Int32.self).pointee != 0
-        } else if prop.format == MPV_FORMAT_STRING, name == "media-title",
+        } else if prop.format == MPV_FORMAT_STRING,
                   let cstr = data.assumingMemoryBound(to: UnsafePointer<CChar>?.self).pointee {
-            title = String(cString: cstr)
+            // mpv hands the node property `track-list` over as JSON.
+            if name == "media-title" { title = String(cString: cstr) }
+            else if name == "track-list" { subtitleTracks = SubtitleTrack.parse(String(cString: cstr)) }
         }
     }
 }

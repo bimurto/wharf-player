@@ -1,6 +1,6 @@
 # P1-22: Subtitle sync offset
 
-**Status:** Todo  
+**Status:** Built, needs manual check  
 **Requirements:** P1-T4  
 **Depends on:** P1-17  
 

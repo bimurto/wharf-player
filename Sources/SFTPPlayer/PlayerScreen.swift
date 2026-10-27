@@ -168,6 +168,30 @@ private struct ControlsBar: View {
                 }
             }
             Divider()
+            Menu("Sync: \(SubtitleSync.label(player.subtitleDelay))") {
+                Button("Earlier (-0.5 s)") { player.stepSubtitleDelay(-1) }
+                    .disabled(!SubtitleSync.canStep(player.subtitleDelay, by: -1))
+                Button("Later (+0.5 s)") { player.stepSubtitleDelay(1) }
+                    .disabled(!SubtitleSync.canStep(player.subtitleDelay, by: 1))
+                Button("Reset") { player.resetSubtitleDelay() }
+                    .disabled(player.subtitleDelay == 0)
+            }
+            Menu("Size: \(SubtitleAppearance.scaleLabel(player.subtitleScale))") {
+                Button("Smaller") { player.stepSubtitleScale(-1) }
+                    .disabled(!SubtitleAppearance.canStepScale(player.subtitleScale, by: -1))
+                Button("Bigger") { player.stepSubtitleScale(1) }
+                    .disabled(!SubtitleAppearance.canStepScale(player.subtitleScale, by: 1))
+            }
+            Menu("Position: \(SubtitleAppearance.positionLabel(player.subtitlePosition))") {
+                Button("Up") { player.stepSubtitlePosition(up: true) }
+                    .disabled(!SubtitleAppearance.canStepPosition(player.subtitlePosition, up: true))
+                Button("Down") { player.stepSubtitlePosition(up: false) }
+                    .disabled(!SubtitleAppearance.canStepPosition(player.subtitlePosition, up: false))
+            }
+            Button("Reset size and position") { player.resetSubtitleAppearance() }
+                .disabled(player.subtitleScale == SubtitleAppearance.defaultScale
+                          && player.subtitlePosition == SubtitleAppearance.defaultPosition)
+            Divider()
             Button("Choose file…") { chooseLocalSubtitle() }
             if !available.isEmpty {
                 Section("On the server") {

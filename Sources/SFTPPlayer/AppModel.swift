@@ -12,6 +12,7 @@ final class AppModel {
     private(set) var currentURL: String?
     /// External subtitle files found for the current video, best match first.
     private(set) var externalSubtitles: [ExternalSubtitle] = []
+    private let subtitleDiscovery = SubtitleDiscovery()
     var servers: [ConnectionProfile] = []
     var activeProfile: ConnectionProfile?
     var showSidebar = false
@@ -121,9 +122,11 @@ final class AppModel {
         player.load(proxy.url(for: target.path), start: recents.resumePosition(for: target.displayURL))
         externalSubtitles = []
         let lister = SFTPBrowser(pool: proxy.pool)
+        let token = subtitleDiscovery.begin()
         Task {
-            let found = await ExternalSubtitles.discover(videoPath: target.path, lister: lister)
-            if currentURL == target.displayURL { externalSubtitles = found }
+            if let found = await subtitleDiscovery.discover(token, videoPath: target.path, lister: lister) {
+                externalSubtitles = found
+            }
         }
         if library.path.isEmpty {
             let folder = (target.path as NSString).deletingLastPathComponent

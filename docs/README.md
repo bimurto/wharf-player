@@ -41,9 +41,9 @@ One folder per phase. Each has a `README.md` with the requirements and one file 
 | [P1-19](phase-1-mvp/P1-19-discover-external-subtitle-files.md) | Discover external subtitle files | Built, needs manual check |
 | [P1-20](phase-1-mvp/P1-20-load-an-external-subtitle-through-the-proxy.md) | Load an external subtitle through the proxy | Built, needs manual check |
 | [P1-21](phase-1-mvp/P1-21-choose-a-local-subtitle-file.md) | Choose a local subtitle file | Built, needs manual check |
-| [P1-22](phase-1-mvp/P1-22-subtitle-sync-offset.md) | Subtitle sync offset | Todo |
-| [P1-23](phase-1-mvp/P1-23-subtitle-size-and-position.md) | Subtitle size and position | Todo |
-| [P1-24](phase-1-mvp/P1-24-guard-against-stale-subtitle-discovery.md) | Guard against stale subtitle discovery | Todo |
+| [P1-22](phase-1-mvp/P1-22-subtitle-sync-offset.md) | Subtitle sync offset | Built, needs manual check |
+| [P1-23](phase-1-mvp/P1-23-subtitle-size-and-position.md) | Subtitle size and position | Built, needs manual check |
+| [P1-24](phase-1-mvp/P1-24-guard-against-stale-subtitle-discovery.md) | Guard against stale subtitle discovery | Done |
 | [P1-25](phase-1-mvp/P1-25-phase-1-acceptance-run.md) | Phase 1 acceptance run | Todo |
 
 ## [Phase 2: Packaging and release](phase-2-packaging/README.md)

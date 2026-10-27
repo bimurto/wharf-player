@@ -18,6 +18,12 @@ final class MPVPlayer {
     /// True once the user picked a track or Off for the current file; reset on load.
     /// Later automatic choices (external subtitle discovery, P1-24) must not override it.
     private(set) var userChoseSubtitle = false
+    /// Subtitle timing offset in seconds, read back from mpv's `sub-delay`.
+    var subtitleDelay: Double = 0
+    /// Subtitle size (`sub-scale`) and position (`sub-pos`); saved, applied once at init and kept across loads.
+    var subtitleScale = SubtitleAppearance.defaultScale
+    var subtitlePosition = SubtitleAppearance.defaultPosition
+    @ObservationIgnored private let appearanceStore = SubtitleAppearanceStore()
     var errorMessage: String?
     /// Why the last `sub-add` failed; playback continues. Cleared on load and on the next attempt.
     var subtitleError: String?
@@ -36,10 +42,14 @@ final class MPVPlayer {
         mpv_set_option_string(handle, "demuxer-readahead-secs", "120")
         mpv_set_option_string(handle, "ytdl", "no")
         mpv_initialize(handle)
+        subtitleScale = appearanceStore.scale
+        subtitlePosition = appearanceStore.position
+        setDouble("sub-scale", subtitleScale)
+        setDouble("sub-pos", subtitlePosition)
         for (name, format) in [("time-pos", MPV_FORMAT_DOUBLE), ("duration", MPV_FORMAT_DOUBLE),
                                ("pause", MPV_FORMAT_FLAG), ("volume", MPV_FORMAT_DOUBLE),
                                ("speed", MPV_FORMAT_DOUBLE), ("media-title", MPV_FORMAT_STRING),
-                               ("track-list", MPV_FORMAT_STRING)] {
+                               ("track-list", MPV_FORMAT_STRING), ("sub-delay", MPV_FORMAT_DOUBLE)] {
             mpv_observe_property(handle, 0, name, format)
         }
         mpv_set_wakeup_callback(handle, { ctx in
@@ -58,6 +68,7 @@ final class MPVPlayer {
         subtitleTracks = []
         userChoseSubtitle = false
         subtitleError = nil
+        setDouble("sub-delay", 0)
         command(["loadfile", url, "replace", "-1"] + (start.map { ["start=\($0)"] } ?? []))
     }
 
@@ -71,6 +82,35 @@ final class MPVPlayer {
     func setSubtitle(_ id: Int?) {
         userChoseSubtitle = true
         command(["set", "sid", SubtitleTrack.sidArgument(id)])
+    }
+
+    /// Moves subtitles one step earlier (-1) or later (+1); the `sub-delay` observer updates `subtitleDelay`.
+    func stepSubtitleDelay(_ direction: Int) {
+        setDouble("sub-delay", SubtitleSync.stepped(subtitleDelay, by: direction))
+    }
+
+    func resetSubtitleDelay() { setDouble("sub-delay", 0) }
+
+    func stepSubtitleScale(_ direction: Int) { setSubtitleScale(SubtitleAppearance.steppedScale(subtitleScale, by: direction)) }
+    func stepSubtitlePosition(up: Bool) { setSubtitlePosition(SubtitleAppearance.steppedPosition(subtitlePosition, up: up)) }
+
+    func setSubtitleScale(_ value: Double) {
+        subtitleScale = SubtitleAppearance.clampedScale(value)
+        appearanceStore.scale = subtitleScale
+        setDouble("sub-scale", subtitleScale)
+    }
+
+    func setSubtitlePosition(_ value: Double) {
+        subtitlePosition = SubtitleAppearance.clampedPosition(value)
+        appearanceStore.position = subtitlePosition
+        setDouble("sub-pos", subtitlePosition)
+    }
+
+    /// Restores 100% and the bottom position; the sync offset is untouched.
+    func resetSubtitleAppearance() {
+        appearanceStore.reset()
+        setSubtitleScale(SubtitleAppearance.defaultScale)
+        setSubtitlePosition(SubtitleAppearance.defaultPosition)
     }
 
     /// Adds the subtitle at `url` (a proxy or file URL), selects it and returns true on success.
@@ -141,6 +181,7 @@ final class MPVPlayer {
             case "duration": duration = v
             case "volume": volume = v
             case "speed": speed = v
+            case "sub-delay": subtitleDelay = v
             default: break
             }
         } else if prop.format == MPV_FORMAT_FLAG, name == "pause" {

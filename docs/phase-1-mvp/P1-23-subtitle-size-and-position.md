@@ -1,6 +1,6 @@
 # P1-23: Subtitle size and position
 
-**Status:** Todo  
+**Status:** Built, needs manual check  
 **Requirements:** P1-T5  
 **Depends on:** P1-17  
 

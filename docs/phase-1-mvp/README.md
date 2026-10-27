@@ -68,9 +68,9 @@ mpv already renders embedded text and image subtitles (ASS styling, PGS) by defa
 | P1-T1 | Subtitle menu lists embedded tracks (from mpv's `track-list`) and Off; selecting one sets `sid` | Built, needs manual check |
 | P1-T2 | Discover external subtitles beside the video and in `Subs`, `Subtitles` and `Sub` folders, filename-prefix matches first; add with `sub-add` | Built, needs manual check (discovery and loading through the proxy; live check pending) |
 | P1-T3 | Choose a local subtitle file with an open panel | Built, needs manual check |
-| P1-T4 | Sync offset of ±5 s in 0.5 s steps (`sub-delay`) | Not started |
-| P1-T5 | Text size 75–200% (`sub-scale`) and vertical position (`sub-pos`), saved between launches, with a Reset action | Not started |
-| P1-T6 | A late discovery result never overrides a track the user chose | Not started |
+| P1-T4 | Sync offset of ±5 s in 0.5 s steps (`sub-delay`) | Built, needs manual check |
+| P1-T5 | Text size 75–200% (`sub-scale`) and vertical position (`sub-pos`), saved between launches, with a Reset action | Built, needs manual check (no slider yet; buttons only) |
+| P1-T6 | A late discovery result never overrides a track the user chose | Done |
 
 ### Sidebar
 

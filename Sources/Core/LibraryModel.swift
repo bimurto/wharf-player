@@ -10,9 +10,16 @@ public final class LibraryModel {
     public private(set) var errorMessage: String?
     public private(set) var serverLabel: String?
     public var hostKeyIssue: HostKeyIssue?
-    public var sort: LibrarySort = .nameAscending
+    private var savedSort: LibrarySort
+    /// The sort order; the last choice is kept in `UserDefaults` across launches.
+    public var sort: LibrarySort {
+        get { savedSort }
+        set { savedSort = newValue; defaults.set(newValue.rawValue, forKey: Self.sortKey) }
+    }
     public var query = ""
 
+    @ObservationIgnored private let defaults: UserDefaults
+    private static let sortKey = "library_sort"
     @ObservationIgnored public private(set) var target: SFTPTarget?
     @ObservationIgnored private var serverKey: String?
     @ObservationIgnored private var browser: DirectoryLister?
@@ -21,7 +28,10 @@ public final class LibraryModel {
     /// Incremented per request so a slow, older response never overwrites a newer one.
     @ObservationIgnored private var requestID = 0
 
-    public init() {}
+    public init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        savedSort = defaults.string(forKey: Self.sortKey).flatMap(LibrarySort.init(rawValue:)) ?? .nameAscending
+    }
 
     public var visibleEntries: [RemoteEntry] { Library.sorted(Library.filtered(entries, query: query), by: sort) }
     public var breadcrumbs: [Breadcrumb] { Breadcrumb.components(of: path) }

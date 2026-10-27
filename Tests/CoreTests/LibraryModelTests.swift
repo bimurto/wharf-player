@@ -115,3 +115,16 @@ final class LibraryModelTests: XCTestCase {
         XCTAssertEqual(lib.childPath("shows"), "/home/reader/shows")
     }
 }
+
+final class LibrarySortPersistenceTests: XCTestCase {
+    func testSortDefaultsToNameAscending() {
+        let defaults = UserDefaults(suiteName: "LibrarySortTests-\(UUID().uuidString)")!
+        XCTAssertEqual(LibraryModel(defaults: defaults).sort, .nameAscending)
+    }
+
+    func testLastSortIsRestoredByANewModel() {
+        let defaults = UserDefaults(suiteName: "LibrarySortTests-\(UUID().uuidString)")!
+        LibraryModel(defaults: defaults).sort = .modifiedNewest
+        XCTAssertEqual(LibraryModel(defaults: defaults).sort, .modifiedNewest)
+    }
+}

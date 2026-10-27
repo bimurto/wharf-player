@@ -1,4 +1,5 @@
 import SwiftUI
+import Core
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -12,6 +13,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 @main
 struct SFTPPlayerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+
+    /// Runs before any scene is built, so before `AppModel.shared` creates the stores that read defaults.
+    init() { LegacyMigration.runAtStartup() }
 
     var body: some Scene {
         Window("Wharf", id: "player") {

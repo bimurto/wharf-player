@@ -57,7 +57,7 @@ One folder per phase. Each has a `README.md` with the requirements and one file 
 | [P2-03](phase-2-packaging/P2-03-rewrite-install-names-and-verify.md) | Rewrite install names and verify | Built, needs manual check |
 | [P2-04](phase-2-packaging/P2-04-decide-the-licence.md) | Decide the licence | Built, owner must fill placeholders |
 | [P2-05](phase-2-packaging/P2-05-ad-hoc-code-signing.md) | Ad-hoc code signing | Todo |
-| [P2-06](phase-2-packaging/P2-06-bundle-identifier-for-stored-data.md) | Bundle identifier for stored data | Todo |
+| [P2-06](phase-2-packaging/P2-06-bundle-identifier-for-stored-data.md) | Bundle identifier for stored data | Built, needs manual check |
 | [P2-07](phase-2-packaging/P2-07-dmg.md) | DMG | Todo |
 | [P2-08](phase-2-packaging/P2-08-release-automation.md) | Release automation | Todo |
 | [P2-09](phase-2-packaging/P2-09-clean-machine-verification.md) | Clean-machine verification | Todo |

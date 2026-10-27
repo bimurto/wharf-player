@@ -63,6 +63,11 @@ public final class RecentsStore {
         withoutPassword(url).replacingOccurrences(of: #"^(\w+://(?:[^@/]*@)?[^:@/]+):22(?=/|$)"#, with: "$1", options: .regularExpression)
     }
 
+    /// Union of two lists by normalized URL, newest `lastPlayed` wins, newest first, capped to `limit`.
+    static func combined(_ a: [RecentItem], _ b: [RecentItem], limit: Int = 20) -> [RecentItem] {
+        Array(merged(a + b).sorted { $0.lastPlayed > $1.lastPlayed }.prefix(limit))
+    }
+
     /// Collapses entries that normalize to the same URL, keeping the newest one in the position of the first.
     private static func merged(_ items: [RecentItem]) -> [RecentItem] {
         var result: [RecentItem] = []

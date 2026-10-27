@@ -1,6 +1,6 @@
 # P2-07: DMG
 
-**Status:** Built, needs manual check  
+**Status:** Done  
 **Requirements:** P2-7  
 **Depends on:** P2-05  
 
@@ -11,7 +11,7 @@ Package the app as a disk image.
 ## Acceptance criteria
 
 - [x] Output named `Wharf-<version>-<arch>.dmg` (owner chose the Wharf name over the original `SFTP-Media-Player-<version>-<arch>.dmg`), e.g. `build/Wharf-1.0.0-arm64.dmg`, with a `.sha256` next to it
-- [ ] Mounting and dragging to Applications works. Built, needs manual check (owner does the drag). Mounting read-only, the `Applications` symlink, `codesign --verify --deep --strict` and `scripts/verify-bundle.sh` on the mounted app were checked.
+- [x] Mounting and dragging to Applications works (owner-confirmed). Mounting read-only, the `Applications` symlink, `codesign --verify --deep --strict` and `scripts/verify-bundle.sh` on the mounted app were checked.
 
 ## Implementation
 

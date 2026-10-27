@@ -1,6 +1,6 @@
 # P2-05: Ad-hoc code signing
 
-**Status:** Todo  
+**Status:** Done  
 **Requirements:** P2-5  
 **Depends on:** P2-03  
 
@@ -10,9 +10,9 @@ Sign the bundle and its libraries.
 
 ## Acceptance criteria
 
-- [ ] `codesign --verify --deep` passes
-- [ ] First launch works after the Gatekeeper right-click Open
-- [ ] Every bundled `.dylib` is signed
+- [x] `codesign --verify --deep` passes (scripts/verify-bundle.sh)
+- [x] First launch works after the Gatekeeper right-click Open (owner-confirmed)
+- [x] Every bundled `.dylib` is signed (scripts/relocate-libs.sh, checked by verify-bundle.sh)
 
 ## Notes
 

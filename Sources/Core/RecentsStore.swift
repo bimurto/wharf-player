@@ -7,6 +7,12 @@ public struct RecentItem: Codable, Equatable, Identifiable, Sendable {
     public var position: TimeInterval
     public var duration: TimeInterval
     public var id: String { url }
+
+    /// Watched fraction from 0 to 1; 0 when the duration is unknown.
+    public var fraction: Double { duration > 0 ? min(max(position / duration, 0), 1) : 0 }
+
+    /// Within the last 10 s of the file; the same cut-off `RecentsStore.resumePosition` uses.
+    public var isFinished: Bool { duration > 0 && position > duration - 10 }
 }
 
 /// Recently played media with playback progress, newest first, as JSON in `UserDefaults`.
@@ -40,7 +46,7 @@ public final class RecentsStore {
     public func resumePosition(for url: String) -> TimeInterval? {
         let clean = Self.withoutPassword(url)
         guard let item = all().first(where: { $0.url == clean }),
-              item.position >= 5, item.duration > 0, item.position <= item.duration - 10 else { return nil }
+              item.position >= 5, item.duration > 0, !item.isFinished else { return nil }
         return item.position
     }
 

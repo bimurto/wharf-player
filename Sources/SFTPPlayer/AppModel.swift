@@ -14,9 +14,10 @@ final class AppModel {
     var activeProfile: ConnectionProfile?
     var showSidebar = false
     var sidebarPanel: SidebarPanel = .library
+    private(set) var recentItems: [RecentItem] = []
     let library = LibraryModel()
 
-    enum SidebarPanel: String, CaseIterable { case library = "Library", servers = "Servers" }
+    enum SidebarPanel: String, CaseIterable { case library = "Library", servers = "Servers", recents = "Recents" }
 
     @ObservationIgnored let profiles = ProfileStore(secrets: KeychainSecretStore())
     @ObservationIgnored private let recents = RecentsStore()
@@ -24,7 +25,17 @@ final class AppModel {
     @ObservationIgnored private var proxyKey: String?
     @ObservationIgnored private var lastSaved = Date.distantPast
 
-    init() { servers = profiles.all() }
+    init() {
+        servers = profiles.all()
+        recentItems = recents.all()
+    }
+
+    // MARK: Recents
+
+    func clearRecents() {
+        recents.clear()
+        recentItems = []
+    }
 
     // MARK: Sidebar
 
@@ -81,10 +92,10 @@ final class AppModel {
             openError = "Passwords in URLs are not supported yet. Use a key file or ssh-agent."
             return .failed
         }
-        // A URL for the active saved server uses that server's credentials.
-        if let p = activeProfile, p.host == target.host, p.port == target.port, p.username == target.user {
-            target = p.target(path: target.path, secret: profiles.secret(for: p))
-        }
+        // A URL for a saved server (the active one first) uses that server's credentials.
+        let saved = ([activeProfile].compactMap { $0 } + servers)
+            .first { $0.host == target.host && $0.port == target.port && $0.username == target.user }
+        if let p = saved { target = p.target(path: target.path, secret: profiles.secret(for: p)) }
         return await play(target)
     }
 
@@ -152,6 +163,7 @@ final class AppModel {
         lastSaved = Date()
         let title = player.title.isEmpty ? (url as NSString).lastPathComponent : player.title
         recents.record(url: url, title: title, position: player.position, duration: player.duration)
+        recentItems = recents.all()
     }
 
     func shutdown() {

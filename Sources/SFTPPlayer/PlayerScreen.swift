@@ -20,6 +20,7 @@ struct PlayerScreen: View {
                     switch model.sidebarPanel {
                     case .library: LibraryPanel(model: model, library: model.library)
                     case .servers: ServersPanel(model: model)
+                    case .recents: RecentsPanel(model: model)
                     }
                 }
                 .frame(minWidth: 320, idealWidth: 380, maxWidth: 640)

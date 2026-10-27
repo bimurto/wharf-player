@@ -65,3 +65,23 @@ final class RecentsStoreTests: XCTestCase {
         XCTAssertTrue(store.all().isEmpty)
     }
 }
+
+final class RecentItemTests: XCTestCase {
+    private func item(_ position: Double, _ duration: Double) -> RecentItem {
+        RecentItem(url: "sftp://reader@fixture.invalid/a.mkv", title: "a", lastPlayed: Date(timeIntervalSince1970: 0),
+                   position: position, duration: duration)
+    }
+
+    func testFractionIsClampedAndZeroWithoutDuration() {
+        XCTAssertEqual(item(50, 100).fraction, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(item(150, 100).fraction, 1)
+        XCTAssertEqual(item(-5, 100).fraction, 0)
+        XCTAssertEqual(item(50, 0).fraction, 0)
+    }
+
+    func testFinishedMeansInTheLastTenSeconds() {
+        XCTAssertFalse(item(89, 100).isFinished)
+        XCTAssertTrue(item(95, 100).isFinished)
+        XCTAssertFalse(item(50, 0).isFinished)
+    }
+}

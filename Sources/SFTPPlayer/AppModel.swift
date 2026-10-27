@@ -13,8 +13,10 @@ final class AppModel {
     var servers: [ConnectionProfile] = []
     var activeProfile: ConnectionProfile?
     var showSidebar = false
-    /// URL the Open sheet starts with, set by Use on a saved server.
-    var openPrefill: String?
+    var sidebarPanel: SidebarPanel = .library
+    let library = LibraryModel()
+
+    enum SidebarPanel: String, CaseIterable { case library = "Library", servers = "Servers" }
 
     @ObservationIgnored let profiles = ProfileStore(secrets: KeychainSecretStore())
     @ObservationIgnored private let recents = RecentsStore()
@@ -23,6 +25,13 @@ final class AppModel {
     @ObservationIgnored private var lastSaved = Date.distantPast
 
     init() { servers = profiles.all() }
+
+    // MARK: Sidebar
+
+    /// Shows `panel`, or hides the sidebar when it is already showing that panel.
+    func toggleSidebar(_ panel: SidebarPanel) {
+        if showSidebar && sidebarPanel == panel { showSidebar = false } else { sidebarPanel = panel; showSidebar = true }
+    }
 
     // MARK: Servers
 
@@ -38,11 +47,15 @@ final class AppModel {
         if activeProfile?.id == profile.id { activeProfile = nil }
     }
 
-    /// Makes `profile` the connection for opened URLs and shows the Open sheet for it.
+    /// Makes `profile` the connection for opened URLs, then shows its default directory in the Library.
     func use(_ profile: ConnectionProfile) {
         activeProfile = profile
-        openPrefill = profile.url()
-        showOpenSheet = true
+        let target = profile.target(secret: profiles.secret(for: profile))
+        guard let proxy = connection(for: target) else { return }
+        library.attach(lister: SFTPBrowser(pool: proxy.pool), target: target)
+        sidebarPanel = .library
+        showSidebar = true
+        Task { await library.load(profile.defaultDirectory ?? ".") }
     }
 
     /// Key used when the Open sheet has none yet.
@@ -50,6 +63,8 @@ final class AppModel {
         let path = NSHomeDirectory() + "/.ssh/id_ed25519"
         return FileManager.default.fileExists(atPath: path) ? path : ""
     }
+
+    // MARK: Playback
 
     enum OpenOutcome { case started, failed, hostKey(HostKeyIssue, SFTPTarget) }
 
@@ -70,26 +85,52 @@ final class AppModel {
         if let p = activeProfile, p.host == target.host, p.port == target.port, p.username == target.user {
             target = p.target(path: target.path, secret: profiles.secret(for: p))
         }
+        return await play(target)
+    }
+
+    /// Plays `target.path`. The server also becomes the Library's server, keeping its current folder
+    /// if it is already showing it.
+    func play(_ target: SFTPTarget) async -> OpenOutcome {
         saveProgress()
-        let id = "\(target.user)@\(target.host):\(target.port)|\(target.keyPath ?? "")|\(target.password ?? "")|\(target.passphrase ?? "")"
-        if proxyKey != id {
-            guard let p = SFTPProxy(target: target) else {
-                openError = "Could not start the local streaming proxy."
-                return .failed
-            }
-            proxy = p
-            proxyKey = id
+        guard let proxy = connection(for: target) else {
+            openError = "Could not start the local streaming proxy."
+            return .failed
         }
-        guard let proxy else { return .failed }
         openError = nil
         if let failure = await proxy.preflight() {
             if let issue = failure.hostKey { return .hostKey(issue, target) }
             openError = failure.description
             return .failed
         }
-        currentURL = raw
-        player.load(proxy.url(for: target.path), start: recents.resumePosition(for: raw))
+        library.attach(lister: SFTPBrowser(pool: proxy.pool), target: target)
+        currentURL = target.displayURL
+        player.load(proxy.url(for: target.path), start: recents.resumePosition(for: target.displayURL))
+        if library.path.isEmpty {
+            let folder = (target.path as NSString).deletingLastPathComponent
+            Task { await library.load(folder.isEmpty ? "/" : folder) }
+        }
         return .started
+    }
+
+    /// Plays a video chosen in the Library.
+    func playFromLibrary(_ entry: RemoteEntry) {
+        guard let base = library.target else { return }
+        Task {
+            if case .hostKey(let issue, _) = await play(base.with(path: library.childPath(entry.name))) {
+                library.hostKeyIssue = issue
+            }
+        }
+    }
+
+    /// The streaming proxy for `target`'s server and credentials, created when they change.
+    private func connection(for target: SFTPTarget) -> SFTPProxy? {
+        let id = "\(target.user)@\(target.host):\(target.port)|\(target.keyPath ?? "")|\(target.password ?? "")|\(target.passphrase ?? "")"
+        if proxyKey != id {
+            guard let p = SFTPProxy(target: target) else { return nil }
+            proxy = p
+            proxyKey = id
+        }
+        return proxy
     }
 
     /// Saves the approved host key; returns why it failed, or nil on success.

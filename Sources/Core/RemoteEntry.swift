@@ -11,6 +11,40 @@ public struct RemoteEntry: Equatable, Sendable {
     }
 }
 
+public extension RemoteEntry {
+    private static let videoExtensions: Set<String> = [
+        "mkv", "mp4", "m4v", "mov", "avi", "webm", "ts", "m2ts", "mts", "wmv", "flv", "mpg", "mpeg", "ogv", "3gp",
+    ]
+
+    /// Playable media by file extension; folders are never videos.
+    var isVideo: Bool {
+        !isDirectory && Self.videoExtensions.contains((name as NSString).pathExtension.lowercased())
+    }
+}
+
+/// A directory's absolute path (resolved by the server) and its entries.
+public struct Listing: Sendable {
+    public let path: String
+    public let entries: [RemoteEntry]
+}
+
+public struct Breadcrumb: Equatable, Identifiable, Sendable {
+    public let name: String
+    public let path: String
+    public var id: String { path }
+
+    /// `/a/b` gives `/`, `a`, `b`, each with the absolute path it leads to.
+    public static func components(of path: String) -> [Breadcrumb] {
+        var crumbs = [Breadcrumb(name: "/", path: "/")]
+        var current = ""
+        for part in path.split(separator: "/") {
+            current += "/" + part
+            crumbs.append(Breadcrumb(name: String(part), path: current))
+        }
+        return crumbs
+    }
+}
+
 public enum LibrarySort: String, CaseIterable, Sendable {
     case nameAscending, nameDescending, modifiedNewest, modifiedOldest
 }

@@ -7,6 +7,8 @@ import CMPV
 final class MPVGLView: NSOpenGLView {
     private let player: MPVPlayer
     private var renderCtx: OpaquePointer?
+    /// Called on every mouse move over the video, so the controls can reappear.
+    var onMouseMoved: (() -> Void)?
 
     init(player: MPVPlayer) {
         self.player = player
@@ -82,6 +84,17 @@ final class MPVGLView: NSOpenGLView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    // SwiftUI's own hover tracking goes stale when the layout changes (for example when the sidebar
+    // closes), so the controls would stay hidden. A tracking area covering the visible rect is kept
+    // current by AppKit on every resize.
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseMoved, .activeInKeyWindow, .inVisibleRect], owner: self))
+    }
+
+    override func mouseMoved(with event: NSEvent) { onMouseMoved?() }
+
     override func keyDown(with event: NSEvent) {
         let big = event.modifierFlags.contains(.shift)
         switch event.charactersIgnoringModifiers {
@@ -103,6 +116,13 @@ final class MPVGLView: NSOpenGLView {
 
 struct MPVVideoView: NSViewRepresentable {
     let player: MPVPlayer
-    func makeNSView(context: Context) -> MPVGLView { MPVGLView(player: player) }
-    func updateNSView(_ view: MPVGLView, context: Context) {}
+    let onMouseMoved: () -> Void
+
+    func makeNSView(context: Context) -> MPVGLView {
+        let view = MPVGLView(player: player)
+        view.onMouseMoved = onMouseMoved
+        return view
+    }
+
+    func updateNSView(_ view: MPVGLView, context: Context) { view.onMouseMoved = onMouseMoved }
 }

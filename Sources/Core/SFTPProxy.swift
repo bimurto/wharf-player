@@ -17,6 +17,9 @@ public struct SFTPTarget: Sendable {
     /// Passphrase for an encrypted key.
     public let passphrase: String?
 
+    /// `sftp://user@host[:port]/path` without credentials, safe to show and store.
+    public var displayURL: String { "sftp://\(user)@\(port == 22 ? host : "\(host):\(port)")\(path)" }
+
     public init(host: String, port: Int = 22, user: String, path: String = "/", keyPath: String? = nil,
                 password: String? = nil, passphrase: String? = nil) {
         self.host = host; self.port = port; self.user = user; self.path = path; self.keyPath = keyPath
@@ -142,6 +145,17 @@ final class SFTPSession {
         return .success((f, attrs.pointee.size))
     }
 
+    /// Lists a directory by its absolute path (the server resolves `.` and `..`), resolving symlinks
+    /// so linked folders show as folders.
+    func listing(_ path: String) -> Result<Listing, Failure> {
+        var real = path
+        if let sftp, let c = sftp_canonicalize_path(sftp, path) {
+            real = String(cString: c)
+            ssh_string_free_char(c)
+        }
+        return list(real).map { Listing(path: real, entries: $0) }
+    }
+
     /// Lists a directory, resolving symlinks so linked folders show as folders.
     func list(_ path: String) -> Result<[RemoteEntry], Failure> {
         guard let sftp, let ssh else { return .failure("session closed") }
@@ -236,7 +250,8 @@ public final class SFTPSessionPool {
 }
 
 public final class SFTPProxy {
-    private let pool: SFTPSessionPool
+    /// Shared with directory listing so one server never sees more than a few logins.
+    public let pool: SFTPSessionPool
     private let token = UUID().uuidString
     private let listener: NWListener
     private let workers = DispatchQueue(label: "proxy.workers", attributes: .concurrent)

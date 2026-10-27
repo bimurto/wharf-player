@@ -11,7 +11,18 @@ struct PlayerScreen: View {
     var body: some View {
         HSplitView {
             if model.showSidebar {
-                ServersPanel(model: model).frame(minWidth: 320, idealWidth: 380, maxWidth: 640)
+                VStack(spacing: 0) {
+                    Picker("Panel", selection: $model.sidebarPanel) {
+                        ForEach(AppModel.SidebarPanel.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    }
+                    .pickerStyle(.segmented).labelsHidden().padding(10)
+                    Divider()
+                    switch model.sidebarPanel {
+                    case .library: LibraryPanel(model: model, library: model.library)
+                    case .servers: ServersPanel(model: model)
+                    }
+                }
+                .frame(minWidth: 320, idealWidth: 380, maxWidth: 640)
             }
             playerArea.frame(minWidth: 480)
         }
@@ -19,7 +30,7 @@ struct PlayerScreen: View {
 
     private var playerArea: some View {
         ZStack(alignment: .bottom) {
-            MPVVideoView(player: player)
+            MPVVideoView(player: player, onMouseMoved: revealControls)
             if let error = player.errorMessage {
                 Text("Playback failed: \(error)")
                     .padding(10).background(.red.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
@@ -27,14 +38,16 @@ struct PlayerScreen: View {
             } else if model.currentURL != nil && !player.isLoaded {
                 ProgressView().controlSize(.large).frame(maxHeight: .infinity)
             }
-            if controlsVisible || player.paused {
+            if model.currentURL != nil && (controlsVisible || player.paused) {
                 ControlsBar(player: player).padding(16).transition(.opacity)
             }
         }
         .overlay(alignment: .topLeading) {
-            if controlsVisible || player.paused {
+            if controlsVisible || player.paused || model.currentURL == nil {
                 HStack {
-                    Button(model.showSidebar ? "Hide Servers" : "Servers") { model.showSidebar.toggle() }
+                    ForEach(AppModel.SidebarPanel.allCases, id: \.self) { panel in
+                        Button(panel.rawValue) { model.toggleSidebar(panel) }
+                    }
                     Button("Open…") { model.showOpenSheet = true }
                 }
                 .padding(12)
@@ -153,7 +166,6 @@ private struct OpenSheet: View {
         .onAppear {
             keyPath = model.defaultKeyPath
             model.openError = nil
-            if let prefill = model.openPrefill { url = prefill; model.openPrefill = nil }
         }
     }
 }

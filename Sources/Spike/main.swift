@@ -135,7 +135,8 @@ if let dir = env["SPIKE_LIST"], let target = SFTPTarget(url, keyPath: env["SPIKE
             print("CHANGED \(fp.sha256)")
         }
         switch result {
-        case .success(let entries):
+        case .success(let listing):
+            let entries = listing.entries
             for e in Library.sorted(entries, by: .modifiedNewest).prefix(8) {
                 print("\(e.isDirectory ? "d" : "-") \(e.size) \(e.modified?.description ?? "-") \(e.name)")
             }

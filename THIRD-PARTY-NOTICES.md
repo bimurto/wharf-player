@@ -17,14 +17,14 @@ Mapped 55 dylibs to 47 Homebrew formulae.
 | gettext | 1.0 | GPL-3.0-or-later AND LGPL-2.1-or-later | https://www.gnu.org/software/gettext/ | https://ftpmirror.gnu.org/gettext/gettext-1.0.tar.gz | libintl.8.dylib |
 | glib | 2.90.1 | LGPL-2.1-or-later | https://docs.gtk.org/glib/ | https://download.gnome.org/sources/glib/2.90/glib-2.90.1.tar.xz | libglib-2.0.0.dylib |
 | graphite2 | 1.3.15 | MIT OR MPL-2.0 OR LGPL-2.1-or-later OR GPL-2.0-or-later | https://graphite.sil.org/ | https://github.com/silnrsi/graphite/releases/download/1.3.15/graphite2-1.3.15.tgz | libgraphite2.3.dylib |
-| harfbuzz | 15.0.0 | MIT | https://github.com/harfbuzz/harfbuzz | https://github.com/harfbuzz/harfbuzz/releases/download/15.0.0/harfbuzz-15.0.0.tar.xz | libharfbuzz.0.dylib |
+| harfbuzz | 15.0.0_1 | MIT | https://github.com/harfbuzz/harfbuzz | https://github.com/harfbuzz/harfbuzz/releases/download/15.0.0/harfbuzz-15.0.0.tar.xz | libharfbuzz.0.dylib |
 | jpeg-turbo | 3.2.0 | IJG AND Zlib AND BSD-3-Clause | https://www.libjpeg-turbo.org/ | https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.2.0/libjpeg-turbo-3.2.0.tar.gz | libjpeg.8.dylib |
 | lame | 4.0 | LGPL-2.0-or-later | https://lame.sourceforge.io/ | https://downloads.sourceforge.net/project/lame/lame/4.0/lame-4.0.tar.gz | libmp3lame.0.dylib |
 | libarchive | 3.8.10 | BSD-2-Clause | https://www.libarchive.org | https://www.libarchive.org/downloads/libarchive-3.8.10.tar.xz | libarchive.13.dylib |
 | libass | 0.17.5_1 | ISC | https://github.com/libass/libass | https://github.com/libass/libass/releases/download/0.17.5/libass-0.17.5.tar.xz | libass.9.dylib |
 | libb2 | 0.98.1 | CC0-1.0 | https://blake2.net/ | https://github.com/BLAKE2/libb2/releases/download/v0.98.1/libb2-0.98.1.tar.gz | libb2.1.dylib |
 | libbluray | 1.5.0 | LGPL-2.1-or-later | https://www.videolan.org/developers/libbluray.html | https://download.videolan.org/videolan/libbluray/1.5.0/libbluray-1.5.0.tar.xz | libbluray.4.dylib |
-| libplacebo | 7.360.1 | LGPL-2.1-or-later | https://code.videolan.org/videolan/libplacebo | https://code.videolan.org/videolan/libplacebo/-/archive/v7.360.1/libplacebo-v7.360.1.tar.bz2 | libplacebo.360.dylib |
+| libplacebo | 7.387.0 | LGPL-2.1-or-later | https://code.videolan.org/videolan/libplacebo | https://code.videolan.org/videolan/libplacebo/-/archive/v7.387.0/libplacebo-v7.387.0.tar.bz2 | libplacebo.387.dylib |
 | libpng | 1.6.59 | libpng-2.0 | https://www.libpng.org/pub/png/libpng.html | https://downloads.sourceforge.net/project/libpng/libpng16/1.6.59/libpng-1.6.59.tar.xz | libpng16.16.dylib |
 | libsamplerate | 0.2.2 | BSD-2-Clause | https://github.com/libsndfile/libsamplerate | https://github.com/libsndfile/libsamplerate/releases/download/0.2.2/libsamplerate-0.2.2.tar.xz | libsamplerate.0.dylib |
 | libssh | 0.12.2_1 | LGPL-2.1-or-later | https://www.libssh.org/ | https://www.libssh.org/files/0.12/libssh-0.12.2.tar.xz | libssh.4.dylib |
@@ -40,9 +40,9 @@ Mapped 55 dylibs to 47 Homebrew formulae.
 | luajit | 2.1.1792588164 | MIT | https://luajit.org/luajit.html | https://github.com/LuaJIT/LuaJIT/archive/a4c064539ea931274d407e1249b4bb575424a0f4.tar.gz | libluajit-5.1.2.dylib |
 | lz4 | 1.10.0 | BSD-2-Clause | https://lz4.github.io/lz4/ | https://github.com/lz4/lz4/archive/refs/tags/v1.10.0.tar.gz | liblz4.1.dylib |
 | mpg123 | 1.33.7 | LGPL-2.1-only | https://www.mpg123.de/ | https://www.mpg123.de/download/mpg123-1.33.7.tar.bz2 | libmpg123.0.dylib |
-| mpv | 0.41.0_11 | GPL-2.0-or-later AND LGPL-2.1-or-later | https://mpv.io | https://github.com/mpv-player/mpv/archive/refs/tags/v0.41.0.tar.gz | libmpv.2.dylib |
+| mpv | 0.41.0_12 | GPL-2.0-or-later AND LGPL-2.1-or-later | https://mpv.io | https://github.com/mpv-player/mpv/archive/refs/tags/v0.41.0.tar.gz | libmpv.2.dylib |
 | mujs | 1.3.11 | ISC | https://www.mujs.com/ | https://mujs.com/downloads/mujs-1.3.11.tar.gz | libmujs.dylib |
-| openssl@4 | 4.0.3 | Apache-2.0 | https://openssl-library.org | https://github.com/openssl/openssl/releases/download/openssl-4.0.3/openssl-4.0.3.tar.gz | libcrypto.4.dylib, libssl.4.dylib |
+| openssl@4 | 4.1.0 | Apache-2.0 | https://openssl-library.org | https://github.com/openssl/openssl/releases/download/openssl-4.1.0/openssl-4.1.0.tar.gz | libcrypto.4.dylib, libssl.4.dylib |
 | opus | 1.6.1 | BSD-3-Clause | https://www.opus-codec.org/ | https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.6.1.tar.gz | libopus.0.dylib |
 | pcre2 | 10.49 | BSD-3-Clause | https://www.pcre.org/ | https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.49/pcre2-10.49.tar.bz2 | libpcre2-8.0.dylib |
 | rubberband | 4.0.0 | GPL-2.0-or-later | https://breakfastquay.com/rubberband/ | https://breakfastquay.com/files/releases/rubberband-4.0.0.tar.bz2 | librubberband.3.dylib |
@@ -58,7 +58,7 @@ Mapped 55 dylibs to 47 Homebrew formulae.
 
 ## mpv
 
-- Version: 0.41.0_11 (Homebrew formula `mpv`)
+- Version: 0.41.0_12 (Homebrew formula `mpv`)
 - Licence: GPL-2.0-or-later AND LGPL-2.1-or-later
 - Upstream source: https://github.com/mpv-player/mpv/archive/refs/tags/v0.41.0.tar.gz
 

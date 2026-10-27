@@ -42,5 +42,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
+scripts/bundle-libs.sh "$APP"
+scripts/relocate-libs.sh "$APP"
+scripts/verify-bundle.sh "$APP"
+
 plutil -lint "$APP/Contents/Info.plist"
 echo "Built $APP"

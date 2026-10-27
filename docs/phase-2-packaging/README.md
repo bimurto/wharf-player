@@ -1,6 +1,6 @@
 # Phase 2: Packaging and release
 
-In progress: P2-1 built, needs manual check. Today the app only runs through `swift run`, using Homebrew's libmpv and libssh.
+In progress: P2-1 to P2-3 built, needs manual check. Today the app only runs through `swift run`, using Homebrew's libmpv and libssh.
 
 ## Goal
 

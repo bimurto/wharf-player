@@ -99,6 +99,11 @@ struct PlayerScreen: View {
                     .foregroundStyle(.white).frame(maxHeight: .infinity, alignment: .top).padding(.top, 48)
             }
             if model.currentURL != nil && (controlsVisible || player.paused) {
+                Text(fileName)
+                    .font(.headline).lineLimit(1).truncationMode(.middle)
+                    .padding(.horizontal, 14).padding(.vertical, 8)
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .frame(maxHeight: .infinity, alignment: .top).padding(16).transition(.opacity)
                 ControlsBar(player: player, externalSubtitles: model.externalSubtitles,
                             onAddSubtitle: model.loadExternalSubtitle,
                             onToggleSidebar: { model.showSidebar.toggle() }).padding(16).transition(.opacity)
@@ -108,6 +113,13 @@ struct PlayerScreen: View {
         .onContinuousHover { if case .active = $0 { revealControls() } }
         .onChange(of: player.position) { model.saveProgressThrottled() }
         .sheet(isPresented: $model.showOpenSheet) { OpenSheet(model: model) }
+    }
+
+    /// The playing file's name, as the recents list titles it.
+    private var fileName: String {
+        if !player.title.isEmpty { return player.title }
+        let last = ((model.currentURL ?? "") as NSString).lastPathComponent
+        return last.removingPercentEncoding ?? last
     }
 
     /// Shows the controls and hides them again after 2.8 s of no mouse movement.

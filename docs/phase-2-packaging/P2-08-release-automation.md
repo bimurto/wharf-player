@@ -1,6 +1,6 @@
 # P2-08: Release automation
 
-**Status:** Todo  
+**Status:** Deferred (no remote repository yet; revisit once the repo is hosted)  
 **Requirements:** P2-8  
 **Depends on:** P2-07  
 

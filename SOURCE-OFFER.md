@@ -34,6 +34,6 @@ For three years from the date you received a copy of Wharf, or for as long as th
 you may request the complete corresponding source for the bundled libraries on a physical medium for no more than the cost of
 physically performing the distribution, by writing to:
 
-**`<CONTACT ADDRESS>`** (placeholder: the owner must fill this in)
+**bimurto@bimurto.io**
 
 Please state the Wharf version (`CFBundleShortVersionString` in `Info.plist`).

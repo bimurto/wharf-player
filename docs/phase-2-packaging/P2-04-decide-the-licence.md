@@ -11,7 +11,7 @@ Homebrew's mpv is a GPL build, so bundling it makes the app GPL.
 
 - [x] Choose: relicense to GPL-3.0, or build mpv with `-Dgpl=false` and FFmpeg without GPL parts (owner chose GPL-3.0)
 - [x] Record the decision in `docs`
-- [ ] Ship licence texts and a corresponding-source offer with the app (built and bundled; open: fill `<REPOSITORY URL>` and `<CONTACT ADDRESS>` in `SOURCE-OFFER.md`, and confirm the copyright holder name)
+- [ ] Ship licence texts and a corresponding-source offer with the app (built and bundled; repository URL and contact email set in `SOURCE-OFFER.md`; open: confirm the copyright holder name and make the repository public before distributing)
 
 ## Notes
 

@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wharf: a Mac video player for your SFTP server</title>
+<meta name="description" content="Wharf is a native macOS video player that streams films straight off your SFTP server. Nothing is downloaded first. Free and open source.">
+<meta name="theme-color" content="#14120D">
+<link rel="canonical" href="https://wharf.bimurto.io/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wharf.bimurto.io/">
+<meta property="og:title" content="Wharf: a Mac video player for your SFTP server">
+<meta property="og:description" content="Click a video on your server and it plays. Nothing is downloaded first.">
+<meta property="og:image" content="https://wharf.bimurto.io/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/wharf-icon.png">
+<link rel="apple-touch-icon" href="assets/wharf-icon.png">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=panchang@700&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="hero" id="top">
+  <div class="hero__top">
+    <a class="mark" href="#top" aria-label="Wharf, back to top">
+      <img src="assets/wharf-icon.png" width="36" height="36" alt="">
+      <span>Wharf</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#questions">Questions</a>
+    </nav>
+  </div>
+  <div class="hero__lede">
+    <p class="lede">A Mac player that streams films straight off your SFTP server.</p>
+    <a class="btn btn--accent" href="https://github.com/bimurto/wharf-player/releases/latest">Download for Mac</a>
+    <p class="hero__note">Version 1.0.0 for Apple silicon, macOS 26 or later. Free and open source.</p>
+  </div>
+  <h1 class="monument"><span class="monument__word">Wharf</span></h1>
+</header>
+
+<main id="main">
+
+<section class="intro" aria-labelledby="intro-h">
+  <div class="intro__text">
+    <h2 id="intro-h" class="intro__head" data-reveal>Nothing comes ashore.</h2>
+    <div class="intro__captions">
+      <p data-reveal style="--i:1">Click a video and it plays. Wharf reads the file from your server as the film runs.</p>
+      <p data-reveal style="--i:2">Jump to the last reel and only those bytes cross the water. Your disk stays empty.</p>
+    </div>
+  </div>
+  <figure class="intro__media" data-reveal style="--i:3">
+    <video class="intro__video" autoplay muted loop playsinline preload="metadata" poster="assets/t-harbour-night-poster.jpg" width="1280" height="720" aria-hidden="true">
+      <source src="assets/t-harbour-night.mp4" type="video/mp4">
+    </video>
+    <figcaption class="credit">Container terminal at night, Hamburg. Footage by Christian Andersen, CC BY 3.0, recoloured.</figcaption>
+  </figure>
+</section>
+
+<section class="plate" aria-labelledby="plate-h">
+  <div class="plate__media" data-reveal>
+    <div class="player" data-ui data-state="paused">
+      <div class="player__frame">
+        <img class="player__img is-on" data-file="0" src="assets/t-ferry.jpg" width="1920" height="1140" alt="A Star Ferry crossing Hong Kong harbour in the evening haze, toned gold." loading="lazy">
+        <img class="player__img" data-file="1" src="assets/t-pier.jpg" width="845" height="590" alt="A tug towing a three-masted sailing ship past a harbour pier and lighthouse, toned gold." loading="lazy">
+        <img class="player__img" data-file="2" src="assets/t-entrepot.jpg" width="1150" height="770" alt="A warehouse dock in nineteenth-century Amsterdam, seen from above, toned gold." loading="lazy">
+        <p class="player__name" data-out="name">Evening on Hong Kong harbour.mkv</p>
+      </div>
+      <div class="player__bar">
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="2"/><path d="M7.5 4v12"/></svg></span>
+        <button class="player__play" type="button" aria-label="Play" data-act="play">
+          <svg class="i-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4.5v11l9-5.5z" fill="currentColor" stroke="none"/></svg>
+          <svg class="i-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4.5h2.6v11H6zM11.4 4.5H14v11h-2.6z" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <span class="player__time num" data-out="pos">0:42:30</span>
+        <label class="visually-hidden" for="scrub">Playhead</label>
+        <input id="scrub" class="player__scrub" type="range" min="0" max="1000" value="420" step="1">
+        <span class="player__time num" data-out="dur">1:41:12</span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M3.5 8h3l4-3.5v11l-4-3.5h-3z"/><path d="M13.5 7.5a3.5 3.5 0 0 1 0 5M15.5 5.5a6.5 6.5 0 0 1 0 9"/></svg></span>
+        <span class="player__speed">1×</span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M3 10h1.5M6 7v6M9 4.5v11M12 7v6M15 8.5v3M17 10h0"/></svg></span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="2.5" y="4.5" width="15" height="10" rx="2"/><path d="M6 11.5h3M11 11.5h3"/></svg></span>
+        <span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M11.5 3.5h5v5M8.5 16.5h-5v-5M16.5 3.5l-5 5M3.5 16.5l5-5"/></svg></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="plate__text">
+    <div class="tabs" role="tablist" aria-label="Sample files on the server" data-reveal>
+      <button class="tab" role="tab" type="button" aria-selected="true" data-file="0">Harbour</button>
+      <button class="tab" role="tab" type="button" aria-selected="false" data-file="1">Pier</button>
+      <button class="tab" role="tab" type="button" aria-selected="false" data-file="2">Entrepot</button>
+    </div>
+
+    <div class="plate__body">
+      <h2 id="plate-h" class="plate__title" data-reveal>Seek anywhere, keep nothing</h2>
+      <p class="plate__desc" data-reveal style="--i:1">Drag the playhead. Wharf asks the server for the bytes from <strong data-out="from">3.53 GB</strong> of <span data-out="size">8.41 GB</span> onward and plays them as they arrive.</p>
+      <dl class="readout" data-reveal style="--i:2" aria-live="polite">
+        <div><dt>Request to the server</dt><dd><code data-out="range">Range: bytes=3532200000-</code></dd></div>
+        <div><dt>In flight</dt><dd>32 reads of 64 KiB</dd></div>
+        <div><dt>Written to your Mac</dt><dd class="readout__zero">0 bytes</dd></div>
+      </dl>
+    </div>
+
+    <div class="cells" data-reveal style="--i:3">
+      <a class="cell cell--ink" href="https://github.com/bimurto/wharf-player/releases/latest">Download for Mac</a>
+      <a class="cell cell--tone" href="https://github.com/bimurto/wharf-player">Read the source</a>
+    </div>
+  </div>
+</section>
+
+<section class="how" id="how" aria-labelledby="how-h">
+  <div class="how__col">
+    <h2 id="how-h" class="how__head" data-reveal>From server to screen</h2>
+
+    <div class="stage">
+      <p data-reveal><strong>To begin, add a server.</strong> Give it a label, host, port, user name and a password or key file. The password goes into the macOS Keychain, never into a file, a URL or your history. Test Connection logs in and tells you what really went wrong.</p>
+      <div class="ev" data-reveal style="--i:1">
+        <div class="win" data-ui>
+          <div class="form">
+            <div class="field field--full"><span>Label</span><b>Seedbox</b></div>
+            <div class="field field--grow"><span>Host</span><b>box.example.net</b></div>
+            <div class="field field--port"><span>Port</span><b>22</b></div>
+            <div class="field field--full"><span>User name</span><b>ana</b></div>
+            <div class="seg" aria-hidden="true"><span class="is-on">Password</span><span>Key file</span></div>
+            <div class="field field--full"><span>Password</span><b>&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</b></div>
+            <div class="field field--full"><span>Default directory (optional)</span><b>/media/films</b></div>
+          </div>
+          <div class="win__foot">
+            <span class="ok">Connected. 14 entries found.</span>
+            <span class="wbtn">Test Connection</span><span class="wbtn">Cancel</span><span class="wbtn wbtn--default">Save</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <p data-reveal><strong>The first time you connect,</strong> Wharf shows the server’s fingerprint and asks before it trusts it. A key that changes later is refused. Wharf keeps its own list of known hosts and never touches the one in your home folder.</p>
+      <div class="ev" data-reveal style="--i:1">
+        <div class="win win--alert" data-ui>
+          <img src="assets/wharf-icon.png" width="56" height="56" alt="" loading="lazy">
+          <p class="alert__title">Trust box.example.net?</p>
+          <p class="alert__msg">This is the first connection to this server, so its identity can’t be checked yet.</p>
+          <p class="alert__msg">ssh-ed25519 fingerprint:<br><span class="alert__fp">SHA256:q3Vw9kJ0bX2mN7rT4cYzL8eH1sPaUfG6dKiO5nWxB0E</span></p>
+          <p class="alert__msg">Trust it only if you expect this server. If unsure, compare the fingerprint with your provider.</p>
+          <div class="alert__btns"><span class="wbtn">Cancel</span><span class="wbtn wbtn--default">Trust</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <p data-reveal><strong>Press Use,</strong> and the Library opens the server’s default folder: breadcrumbs, sizes and dates, sorting by name or date, and a search box. Click a video and it plays. Wharf remembers the last folder you opened on each server.</p>
+      <div class="ev" data-reveal style="--i:1">
+        <div class="win win--list" data-ui>
+          <div class="lib__bar"><span class="lib__search">Search this folder</span><span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M6 15V4M3 7l3-3 3 3M14 5v11M11 13l3 3 3-3"/></svg></span><span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M15.5 10a5.5 5.5 0 1 1-1.8-4.1M15.5 3.5v3.5H12"/></svg></span></div>
+          <p class="lib__crumbs"><span>/</span><span>media</span><i>/</i><span>films</span></p>
+          <ul class="lib__rows">
+            <li><span class="ico ico--gold" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M2.5 5.5h5l1.5 1.5h8.5v8.5h-15z" fill="currentColor" stroke="none"/></svg></span><span><b>Extras</b><small>12 Oct 2026</small></span></li>
+            <li class="is-hover"><span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3.5" y="2.5" width="13" height="15" rx="1"/><path d="M6 2.5v15M14 2.5v15M3.5 7h2.5M3.5 13h2.5M14 7h2.5M14 13h2.5"/></svg></span><span><b>Evening on Hong Kong harbour.mkv</b><small>8.41 GB · 3 Nov 2026</small></span></li>
+            <li><span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3.5" y="2.5" width="13" height="15" rx="1"/><path d="M6 2.5v15M14 2.5v15M3.5 7h2.5M3.5 13h2.5M14 7h2.5M14 13h2.5"/></svg></span><span><b>Evening on Hong Kong harbour.en.srt</b><small>94 KB · 3 Nov 2026</small></span></li>
+            <li><span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3.5" y="2.5" width="13" height="15" rx="1"/><path d="M6 2.5v15M14 2.5v15M3.5 7h2.5M3.5 13h2.5M14 7h2.5M14 13h2.5"/></svg></span><span><b>The Entrepot dock, Amsterdam.mkv</b><small>24.6 GB · 28 Oct 2026</small></span></li>
+            <li><span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="3.5" y="2.5" width="13" height="15" rx="1"/><path d="M6 2.5v15M14 2.5v15M3.5 7h2.5M3.5 13h2.5M14 7h2.5M14 13h2.5"/></svg></span><span><b>Tug and sailing ship at the pier.mp4</b><small>2.06 GB · 19 Oct 2026</small></span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage">
+      <p data-reveal><strong>Come back whenever you like,</strong> and Recents picks up where you stopped, with the audio track you chose. Less than five seconds in starts over, and the last ten seconds count as finished.</p>
+      <div class="ev" data-reveal style="--i:1">
+        <div class="win win--list" data-ui>
+          <div class="rec__head"><b>Recents</b><span class="wbtn">Clear</span></div>
+          <ul class="rec__rows">
+            <li><b>Evening on Hong Kong harbour</b><span class="bar"><i style="--p:42%"></i></span><small>0:42:30 of 1:41:12 · 2 hours ago</small></li>
+            <li><b>The Entrepot dock, Amsterdam</b><span class="bar"><i style="--p:71%"></i></span><small>1:35:10 of 2:14:05 · yesterday</small></li>
+            <li><b>Tug and sailing ship at the pier</b><span class="bar"><i style="--p:100%"></i></span><small>Finished · 3 days ago</small></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="index" id="features" aria-labelledby="features-h">
+  <h2 id="features-h" class="index__head" data-reveal>What it does</h2>
+  <div class="index__grid">
+    <div class="index__group" data-reveal>
+      <h3>Playback</h3>
+      <ul>
+        <li tabindex="0" data-desc="A local proxy serves byte ranges to the player, so the film starts in seconds.">Streams over SFTP</li>
+        <li tabindex="0" data-desc="Jump anywhere and only that part of the file is read from the server.">Seeks without downloading</li>
+        <li tabindex="0" data-desc="mpv decodes on the graphics chip where it safely can.">Hardware decoding</li>
+        <li tabindex="0" data-desc="Six speeds, from half speed to double.">Speed from 0.5× to 2×</li>
+        <li tabindex="0" data-desc="Quiet recordings get a third more headroom.">Volume up to 130%</li>
+        <li tabindex="0" data-desc="Files with two or more audio tracks get a menu, and Wharf remembers the pick per file.">Audio track menu</li>
+        <li tabindex="0" data-desc="Press F or double-click the picture.">Full screen</li>
+        <li tabindex="0" data-desc="The screen stays on while a film plays and may sleep again when you pause.">Keeps the display awake</li>
+        <li tabindex="0" data-desc="The controls fade after 2.8 seconds without the mouse moving.">Controls that get out of the way</li>
+      </ul>
+      <p class="index__sum">Streaming, seeking, decoding and the controls, handled by mpv.</p>
+    </div>
+    <div class="index__group" data-reveal style="--i:1">
+      <h3>Subtitles</h3>
+      <ul>
+        <li tabindex="0" data-desc="Pick any track inside the file, or turn them off.">Embedded tracks</li>
+        <li tabindex="0" data-desc="SRT, VTT, ASS and SSA files beside the video are found and offered, best match first.">Files beside the video</li>
+        <li tabindex="0" data-desc="Choose a subtitle file from your Mac instead.">A file from your Mac</li>
+        <li tabindex="0" data-desc="Move subtitles earlier or later in half-second steps.">Sync in 0.5 s steps</li>
+        <li tabindex="0" data-desc="Make the text bigger or smaller.">Size</li>
+        <li tabindex="0" data-desc="Raise the subtitles off the bottom edge.">Position</li>
+        <li tabindex="0" data-desc="Size and position are kept for the next film and the next launch.">Remembered between launches</li>
+      </ul>
+      <p class="index__sum">Tracks in the file, files beside it or on your Mac, timed and placed to suit.</p>
+    </div>
+    <div class="index__group" data-reveal style="--i:2">
+      <h3>Library</h3>
+      <ul>
+        <li tabindex="0" data-desc="Label, host, port, user, password or key, and a default folder.">Saved servers</li>
+        <li tabindex="0" data-desc="Logs in, lists the folder and reports the real reason when it fails.">Test Connection</li>
+        <li tabindex="0" data-desc="You see the server's fingerprint before anything is trusted.">Trust on first use</li>
+        <li tabindex="0" data-desc="Seedboxes limit logins, so Wharf reuses up to three sessions.">Three logins at most</li>
+        <li tabindex="0" data-desc="Each server reopens where you left it.">Last folder per server</li>
+        <li tabindex="0" data-desc="Name A to Z, Z to A, newest or oldest, kept between launches.">Sort by name or date</li>
+        <li tabindex="0" data-desc="Filter the current folder as you type.">Search this folder</li>
+        <li tabindex="0" data-desc="Linked folders open like folders.">Symlinked folders</li>
+        <li tabindex="0" data-desc="The last twenty films with their progress, ready to resume.">Recents with resume</li>
+        <li tabindex="0" data-desc="Paste an sftp:// address with Command-O.">Open by URL</li>
+      </ul>
+      <p class="index__sum">Your servers, their folders and your place in every film.</p>
+    </div>
+    <p class="index__desc" aria-live="polite" data-out="desc">Point at a feature to read what it does.</p>
+  </div>
+</section>
+
+<figure class="band" aria-labelledby="band-cap">
+  <div class="band__img"><img src="assets/t-brooklyn.jpg" width="1400" height="1170" alt="A four-storey brick dock warehouse in Brooklyn, 1936, with a coffee advertisement painted in huge letters across its wall, toned gold." loading="lazy"></div>
+  <figcaption id="band-cap" class="band__cap" data-reveal>
+    <p>Water and Dock Streets, Brooklyn, 1936. A wharf painted its name across the brick, big enough to read from a ship. This page does the same.</p>
+    <p class="credit">Photograph by Berenice Abbott for the Federal Art Project, New York Public Library, public domain, recoloured.</p>
+  </figcaption>
+</figure>
+
+<section class="proof" aria-label="Built on">
+  <p class="proof__line" data-reveal><span class="proof__lead">Below deck, Wharf runs on</span> <span class="nm is-lit">mpv</span>, <span class="nm">FFmpeg</span>, <span class="nm">libssh</span>, <span class="nm">libass</span>, <span class="nm">SwiftUI</span> and <span class="nm">the macOS Keychain</span>.</p>
+</section>
+
+<section class="keys" aria-labelledby="keys-h">
+  <h2 id="keys-h" class="visually-hidden">Keyboard shortcuts</h2>
+  <table class="keys__table">
+    <caption class="visually-hidden">Wharf keyboard shortcuts</caption>
+    <thead class="visually-hidden"><tr><th scope="col">Key</th><th scope="col">Action</th><th scope="col">Where</th><th scope="col">Detail</th></tr></thead>
+    <tbody>
+      <tr class="keys__part"><th colspan="4" scope="rowgroup">In the player</th></tr>
+      <tr><td>Space</td><td>Play or pause</td><td>Player</td><td class="num">Any time</td></tr>
+      <tr><td>Left, right</td><td>Seek</td><td>Player</td><td class="num">10 s</td></tr>
+      <tr><td>Shift with left, right</td><td>Seek further</td><td>Player</td><td class="num">60 s</td></tr>
+      <tr><td>Up, down</td><td>Volume</td><td>Player</td><td class="num">Up to 130%</td></tr>
+      <tr><td>F</td><td>Full screen</td><td>Player</td><td>Or double-click</td></tr>
+      <tr class="keys__part"><th colspan="4" scope="rowgroup">Anywhere in Wharf</th></tr>
+      <tr><td>Command O</td><td>Open a URL</td><td>Menu bar</td><td>sftp:// address</td></tr>
+      <tr><td>Command 1</td><td>Library</td><td>Sidebar</td><td>Toggles</td></tr>
+      <tr><td>Command 2</td><td>Servers</td><td>Sidebar</td><td>Toggles</td></tr>
+      <tr><td>Command 3</td><td>Recents</td><td>Sidebar</td><td>Toggles</td></tr>
+      <tr><td>Left, right</td><td>Resize the sidebar</td><td>Divider</td><td>When focused</td></tr>
+      <tr><td>Home, End</td><td>Narrowest, widest</td><td>Divider</td><td>When focused</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="faq" id="questions" aria-labelledby="faq-h">
+  <h2 id="faq-h" class="faq__head" data-reveal>Before you install</h2>
+  <div class="faq__list">
+    <details data-reveal>
+      <summary>What do I need to run it?</summary>
+      <div class="faq__a"><p>A Mac with Apple silicon on macOS 26 or later, and a server you can reach over SFTP: a seedbox, a NAS or a VPS. Any server that speaks SSH will do.</p></div>
+    </details>
+    <details data-reveal style="--i:1">
+      <summary>Does Wharf download the file first?</summary>
+      <div class="faq__a"><p>No. A small proxy on your Mac fetches only the bytes the player asks for, with 32 reads in flight so the picture keeps up. Seeking jumps straight to the right place in the file, and nothing is written to disk.</p></div>
+    </details>
+    <details data-reveal style="--i:2">
+      <summary>Where does my password go?</summary>
+      <div class="faq__a"><p>Into the macOS Keychain. It is never written to profile files, URLs, recents or logs. Deleting a server removes its password or key passphrase from the Keychain too.</p></div>
+    </details>
+    <details data-reveal style="--i:3">
+      <summary>Why does macOS warn me when I open it?</summary>
+      <div class="faq__a"><p>Wharf is ad-hoc signed and not notarised yet. Right-click the app and choose Open, or run this once in Terminal:</p><pre><code>xattr -dr com.apple.quarantine /Applications/Wharf.app</code></pre></div>
+    </details>
+    <details data-reveal style="--i:4">
+      <summary>Which files does it play?</summary>
+      <div class="faq__a"><p>Anything mpv plays. The Library marks MKV, MP4, M4V, MOV, AVI, WebM, TS, M2TS, MTS, WMV, FLV, MPEG, OGV and 3GP as videos, and finds SRT, VTT, ASS and SSA subtitles beside them.</p></div>
+    </details>
+    <details data-reveal style="--i:5">
+      <summary>Is it free?</summary>
+      <div class="faq__a"><p>Yes. Wharf is free software under the GNU General Public License, version 3 or later. It bundles unmodified builds of mpv, FFmpeg and their libraries under their own licences, listed in the third-party notices with a written source offer.</p></div>
+    </details>
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="cta-h">
+  <h2 id="cta-h" class="cta__head" data-reveal>Keep it offshore.</h2>
+  <div class="cta__row">
+    <p class="cta__line" data-reveal style="--i:1">Wharf 1.0.0 for Apple silicon Macs. Free, open source, and your films never leave the server.</p>
+    <a class="btn btn--accent btn--big" href="https://github.com/bimurto/wharf-player/releases/latest" data-reveal style="--i:2">Download Wharf</a>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <p class="foot__word" aria-hidden="true"><span>Wharf</span></p>
+  <div class="foot__row">
+    <ul class="foot__places">
+      <li><a href="https://github.com/bimurto/wharf-player/releases/latest">Download</a></li>
+      <li><a href="https://github.com/bimurto/wharf-player">Source code</a></li>
+      <li><a href="https://github.com/bimurto/wharf-player/issues">Report a problem</a></li>
+    </ul>
+    <div class="foot__cols">
+      <div>
+        <h3>Project</h3>
+        <ul>
+          <li><a href="https://github.com/bimurto/wharf-player#readme">Read me</a></li>
+          <li><a href="https://github.com/bimurto/wharf-player/tree/main/docs">Plans and status</a></li>
+          <li><a href="https://github.com/bimurto/wharf-player/releases">All releases</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Licences</h3>
+        <ul>
+          <li><a href="https://github.com/bimurto/wharf-player/blob/main/LICENSE">GPL 3.0 or later</a></li>
+          <li><a href="https://github.com/bimurto/wharf-player/blob/main/THIRD-PARTY-NOTICES.md">Third-party notices</a></li>
+          <li><a href="https://github.com/bimurto/wharf-player/blob/main/SOURCE-OFFER.md">Source offer</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Built with</h3>
+        <ul>
+          <li><a href="https://mpv.io">mpv</a></li>
+          <li><a href="https://ffmpeg.org">FFmpeg</a></li>
+          <li><a href="https://www.libssh.org">libssh</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot__credits">
+    <p>Pictures, all recoloured in the two colours of the Wharf icon: <a href="https://commons.wikimedia.org/wiki/File:Hamburg_(Timelapse-Test).webm">Hamburg (Timelapse-Test)</a> by Christian Andersen, CC BY 3.0. <a href="https://commons.wikimedia.org/w/index.php?curid=52620060">Warehouse, Water and Dock Streets, Brooklyn</a> by Berenice Abbott, New York Public Library, public domain. <a href="https://commons.wikimedia.org/w/index.php?curid=105177535">Evening on Hong Kong harbour</a> by Bernard Spragg, CC0. <a href="https://commons.wikimedia.org/w/index.php?curid=149126375">Tug towing a sailing ship at a harbour pier</a>, Rijksmuseum, CC0. <a href="https://commons.wikimedia.org/w/index.php?curid=150055717">The Entrepot dock, Amsterdam</a>, Rijksmuseum, CC0. Sample file names in the player are illustrations.</p>
+  </div>
+  <div class="foot__legal">
+    <p>Wharf is free software by bimurto, 2026.</p>
+    <a href="#top">Back to top</a>
+  </div>
+</footer>
+
+<script src="site.js" defer></script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /* Hallmark · shape: monument and run-in column · genre: atmospheric · theme: custom · job: try · idea: "the painted warehouse name of a wharf becomes the wordmark that spans the screen" · vibe: "dock warehouse at night, gold paint on brick"
- * paper: oklch(18% 0.01 85) · accent: oklch(81% 0.12 80) · display: Panchang · body: Switzer · hero: one word cropped by both edges, lede and action in the top third · nav: corner links · footer: name first, places under it · imagery: the product's own interface built in HTML, archival harbour photographs recoloured to the icon's two colours, one footage loop · signature: drag the playhead and read the byte range Wharf requests, with 0 bytes written to disk
+ * paper: oklch(18% 0.01 85) · accent: oklch(81% 0.12 80) · display: Panchang · body: Switzer · hero: one word cropped by both edges, lede and action in the top third · nav: corner links · footer: name first, places under it · imagery: a real screenshot of the app under the intro, the interface built in HTML for the live player, archival harbour photographs recoloured to the icon's two colours · signature: drag the playhead and read the byte range Wharf requests, with 0 bytes written to disk
  * axes: dark/display-heavy/warm · posture: monument · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V4 · weakest: execution, every fragment uses the app's real strings and the inspector runs before hand-off */
 /* Hallmark · waive 26b · no control on the page is ever disabled, so there is no disabled state to style · the Wharf player, tabs and links are always live */
@@ -7,7 +7,7 @@
 /* Hallmark · dismissed F4 · one filled recipe, .btn--accent, used in the hero and the close; the cta rule only changes its hover on the light field */
 /* Hallmark · dismissed 42 · the footer is the dealt name-first shape: the Wharf name, three places, three small link groups */
 /* Hallmark · dismissed 58 · about 300 counted words are the interface strings inside the Wharf window fragments, and FAQ answers are collapsed */
-/* Hallmark · waive 47b · the player, server form, trust alert and library are the Wharf interface itself, drawn from its SwiftUI source · the product being shown is a Mac app */
+/* Hallmark · waive 47b · the player, server form, trust alert and library are the Wharf interface itself, drawn from its SwiftUI source · visitors download Wharf for Mac, so the page shows its own player, Library and Recents windows */
 @import url("./tokens.css");
 @import url("./base.css");
 
@@ -79,27 +79,13 @@ code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0
 .intro__head { font-size: var(--step-big); line-height: 0.95; letter-spacing: -0.03em; max-width: 14ch; }
 .intro__captions { display: flex; gap: var(--space-2xl); margin-top: var(--space-lg); }
 .intro__captions p { width: 21ch; font-size: var(--step-small); color: var(--color-ink-2); line-height: 1.45; }
-.intro__media { margin: var(--space-xl) 0 0; }
-.intro__video { width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
-.intro__media .credit { padding: var(--space-sm) var(--edge) 0; }
+.intro__media { margin: var(--space-xl) 0 0; padding-inline: var(--edge); }
+.intro__media img { width: 100%; }
 @media (max-width: 40rem) {
   .intro__head { font-size: 1.875rem; }
   .intro__captions { flex-direction: column; gap: var(--space-sm); }
   .intro__captions p { width: auto; }
-  .intro__video { aspect-ratio: 4 / 5; }
-}
-
-/* ───────── Shot: the real window, never recoloured ───────── */
-.shot { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); align-items: end; padding-inline: var(--edge); margin-top: var(--section-gap); }
-.shot__text { grid-column: 1 / span 3; display: grid; gap: var(--space-md); padding-bottom: var(--space-sm); }
-.shot__head { font-size: var(--step-head); line-height: 1.05; letter-spacing: -0.02em; }
-.shot__text p:not(.credit) { color: var(--color-ink-2); }
-.shot__media { grid-column: 4 / span 9; margin: 0; }
-.shot__media img { width: 100%; }
-@media (max-width: 60rem) {
-  .shot { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-lg); }
-  .shot__text, .shot__media { grid-column: 1; }
-  .shot__media { order: -1; margin-inline: calc(-1 * var(--edge)); }
+  .intro__media { padding-inline: 0; }
 }
 
 /* ───────── Plate: the live player ───────── */

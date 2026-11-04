@@ -118,6 +118,4 @@
     }, 2000);
   }
 
-  // The footage loop rests under reduced motion.
-  if (reduce) document.querySelectorAll('video[autoplay]').forEach((v) => { v.removeAttribute('autoplay'); v.pause(); });
 })();

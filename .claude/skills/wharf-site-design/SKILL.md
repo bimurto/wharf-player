@@ -68,7 +68,7 @@ Rules that come from Panchang's width:
 
 - Margins are tight: `--gutter` is 28px (20px on phones), so big type reaches the edges.
 - Sections are separated by space (`--section-gap*`, 120–176px) or by a change of field colour (`--color-paper-2`, or the light closing field). Never by a line, a border or a shadow.
-- Neighbouring sections never share a composition. The page today runs: monument hero → heading over a full-bleed footage panorama → the real app window on columns 4–12 with its caption bottom-aligned in columns 1–3 → a 50/50 plate with the live player → a narrow run-in column starting at 30vw → three one-size name columns → a photograph with a caption beside it → one statement sentence → a full-width one-size table → a wide heading with indented questions → the inverted close → the name-first footer. A new section takes a composition none of its neighbours use.
+- Neighbouring sections never share a composition. The page today runs: monument hero → the idea heading with two short captions over the real app window → a 50/50 plate with the live player → a narrow run-in column starting at 30vw → three one-size name columns → a photograph with a caption beside it → one statement sentence → a full-width one-size table → a wide heading with indented questions → the inverted close → the name-first footer. A new section takes a composition none of its neighbours use.
 - Grids use `minmax(0, 1fr)` tracks so pictures never force overflow. `html` and `body` keep `overflow-x: clip`.
 - Phones get their own composition, not a squashed desktop. The hero word turns vertical and runs down the right edge.
 
@@ -95,7 +95,7 @@ What the site shows, in order of preference:
 4. Type and colour alone.
 
 Every picture except the app screenshots is recoloured to the icon's two colours (`#14120D` to `#EBBB66`) so archival scans and modern footage read as one set. Run `scripts/duotone.py` for stills. Run the ffmpeg command in `references/components.md` for footage, which also trims it. Save into `site/assets/` with a `t-` prefix, then:
-- add a credit naming the title, creator, licence and "recoloured" in the footer `.foot__credits` paragraph, and under the picture if it is large;
+- add a credit naming the title, creator, licence and "recoloured" in the footer `.foot__credits` paragraph. That satisfies CC BY. A caption under the picture is optional; add one only when it says something about the picture (like the Brooklyn band), not just to repeat the credit;
 - add its entry to `site/assets/credits.json`;
 - give it real `width`, `height` and an `alt` that says what the picture shows and that it is toned gold;
 - never present a found picture as Wharf's product, users or team.
@@ -128,7 +128,8 @@ These keep the page from looking generated. Each has a reason, and the checks be
 - The signature move: the monument word sinks from scale 1 to 0.93 as the hero scrolls away (`animation-timeline: scroll(root)`, inside `@supports`). It is the only scroll-linked effect. Don't add a second one.
 - Section parts rise 24px and fade in once, staggered 80ms with `style="--i:n"`, through `[data-reveal]` and the observer in `site.js`. Content stays visible without JS: the hidden state only applies under `html.js`.
 - Every control has hover, press (`scale(0.97)`) and `:focus-visible` feedback. Animate only `transform`, `opacity`, `scale`, `translate` and colours. Never `transition: all`.
-- Everything has a `prefers-reduced-motion` fallback: no travel, the footage paused, the lit-name cycle stopped.
+- Everything has a `prefers-reduced-motion` fallback: no travel, the lit-name cycle stopped.
+- There is no video on the page. The intro footage was replaced by the real app window, because the product proves "nothing comes ashore" better than a harbour metaphor. The taste checker may warn `no-footage`; that is accepted. Add a video only if it shows Wharf itself.
 
 ## Checks before handing back
 
@@ -140,7 +141,7 @@ node ~/.claude/skills/design-taste-frontend/scripts/inspect.mjs site/index.html 
 node ~/.claude/skills/hallmark/scripts/sloplint.mjs site/index.html site/site.css --genre atmospheric
 ```
 
-Then open the screenshots in `.taste-skill/inspect/` and look at every width. The inspector measures rules but not quality: a headline that technically fits but crowds the screen is still wrong. Known, accepted warnings are the third typeface (the system font inside `[data-ui]`) and the size count. Waivers and dismissals live as comments at the top of `site.css`. Add one only with a reason specific to this page.
+Then open the screenshots in `.taste-skill/inspect/` and look at every width. The inspector measures rules but not quality: a headline that technically fits but crowds the screen is still wrong. Known, accepted warnings are the third typeface (the system font inside `[data-ui]`), the size count, and no footage. Waivers and dismissals live as comments at the top of `site.css`. Add one only with a reason specific to this page.
 
 For a new page, copy the `<head>` of `index.html` (fonts, icon, Open Graph tags, the `html.js` line), reuse `site.css`, and add page-specific rules at the end of it rather than in a new stylesheet.
 

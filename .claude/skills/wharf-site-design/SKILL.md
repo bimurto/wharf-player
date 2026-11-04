@@ -68,7 +68,7 @@ Rules that come from Panchang's width:
 
 - Margins are tight: `--gutter` is 28px (20px on phones), so big type reaches the edges.
 - Sections are separated by space (`--section-gap*`, 120–176px) or by a change of field colour (`--color-paper-2`, or the light closing field). Never by a line, a border or a shadow.
-- Neighbouring sections never share a composition. The page today runs: monument hero → heading over a full-bleed footage panorama → a 50/50 plate with the live player → a narrow run-in column starting at 30vw → three one-size name columns → a photograph with a caption beside it → one statement sentence → a full-width one-size table → a wide heading with indented questions → the inverted close → the name-first footer. A new section takes a composition none of its neighbours use.
+- Neighbouring sections never share a composition. The page today runs: monument hero → heading over a full-bleed footage panorama → the real app window on columns 4–12 with its caption bottom-aligned in columns 1–3 → a 50/50 plate with the live player → a narrow run-in column starting at 30vw → three one-size name columns → a photograph with a caption beside it → one statement sentence → a full-width one-size table → a wide heading with indented questions → the inverted close → the name-first footer. A new section takes a composition none of its neighbours use.
 - Grids use `minmax(0, 1fr)` tracks so pictures never force overflow. `html` and `body` keep `overflow-x: clip`.
 - Phones get their own composition, not a squashed desktop. The hero word turns vertical and runs down the right edge.
 
@@ -89,11 +89,12 @@ Copy these instead of inventing new ones. Markup and notes for each are in `refe
 ## Pictures
 
 What the site shows, in order of preference:
-1. **The app itself**, built as a `[data-ui]` fragment with its real labels, numbers that add up, and one item hovered or selected. Never a fake dashboard, never a device frame.
-2. **Real pictures of the harbour world**: archival or openly licensed photographs and footage of wharves, docks, warehouses, ferries, cranes. Use only CC0, public domain or CC BY. CC BY-SA forces share-alike on a recoloured version, so leave it out.
-3. Type and colour alone.
+1. **Real screenshots of the app** (`.shot`, `site/assets/wharf-window-*.jpg`). They prove the app exists and looks this way, which drawn pieces can't. Never recolour them, because the product must look as it does. Flatten the window's transparent corners onto `--color-paper`, export 1800 and 1200 px JPEGs (quality about 86) with `srcset`, and credit any film shown in them. Take them with a demo server, never your own: keep real host names and personal folders out of the frame (the current shot uses `/Users/Shared/Media/Films`), and use an openly licensed film such as Blender's Sintel (CC BY 3.0).
+2. **The app drawn in HTML**, as a `[data-ui]` fragment with its real labels, numbers that add up, and one item hovered or selected. Use it where the page needs something a screenshot can't do: the interactive player, or a small panel at any size. Never a fake dashboard, never a device frame.
+3. **Real pictures of the harbour world**: archival or openly licensed photographs and footage of wharves, docks, warehouses, ferries, cranes. Use only CC0, public domain or CC BY. CC BY-SA forces share-alike on a recoloured version, so leave it out.
+4. Type and colour alone.
 
-Every picture is recoloured to the icon's two colours (`#14120D` to `#EBBB66`) so archival scans and modern footage read as one set. Run `scripts/duotone.py` for stills. Run the ffmpeg command in `references/components.md` for footage, which also trims it. Save into `site/assets/` with a `t-` prefix, then:
+Every picture except the app screenshots is recoloured to the icon's two colours (`#14120D` to `#EBBB66`) so archival scans and modern footage read as one set. Run `scripts/duotone.py` for stills. Run the ffmpeg command in `references/components.md` for footage, which also trims it. Save into `site/assets/` with a `t-` prefix, then:
 - add a credit naming the title, creator, licence and "recoloured" in the footer `.foot__credits` paragraph, and under the picture if it is large;
 - add its entry to `site/assets/credits.json`;
 - give it real `width`, `height` and an `alt` that says what the picture shows and that it is toned gold;

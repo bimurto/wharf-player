@@ -115,5 +115,18 @@
     "notes": [],
     "saved": "2026-11-04T19:55:28.305Z",
     "note": "recoloured to #14120D/#EBBB66 duotone, trimmed to 0:30-0:56"
+  },
+  {
+    "file": "site/assets/wharf-window-1800.jpg",
+    "media": "image",
+    "title": "Sintel",
+    "creator": "Blender Foundation",
+    "date": "2010",
+    "license": "CC BY 3.0",
+    "licenseCode": "by",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0/",
+    "creditRequired": true,
+    "page": "https://durian.blender.org",
+    "note": "a frame of Sintel inside a screenshot of Wharf taken for this site; not recoloured; also wharf-window-1200.jpg"
   }
 ]

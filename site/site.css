@@ -89,6 +89,19 @@ code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0
   .intro__video { aspect-ratio: 4 / 5; }
 }
 
+/* ───────── Shot: the real window, never recoloured ───────── */
+.shot { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap-columns); align-items: end; padding-inline: var(--edge); margin-top: var(--section-gap); }
+.shot__text { grid-column: 1 / span 3; display: grid; gap: var(--space-md); padding-bottom: var(--space-sm); }
+.shot__head { font-size: var(--step-head); line-height: 1.05; letter-spacing: -0.02em; }
+.shot__text p:not(.credit) { color: var(--color-ink-2); }
+.shot__media { grid-column: 4 / span 9; margin: 0; }
+.shot__media img { width: 100%; }
+@media (max-width: 60rem) {
+  .shot { grid-template-columns: minmax(0, 1fr); row-gap: var(--space-lg); }
+  .shot__text, .shot__media { grid-column: 1; }
+  .shot__media { order: -1; margin-inline: calc(-1 * var(--edge)); }
+}
+
 /* ───────── Plate: the live player ───────── */
 .plate { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 88svh; background: var(--color-paper-2); margin-top: var(--section-gap); }
 .plate__media { display: grid; place-items: center; padding: var(--space-xl); }

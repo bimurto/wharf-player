@@ -22,11 +22,11 @@
   <img src="https://img.shields.io/badge/Apple%20silicon-arm64-EBBB66?labelColor=14120D" alt="Apple silicon">
 </p>
 
-<!-- Screenshot: add docs/images/wharf-player.png (the main window playing a video, Library sidebar open), then uncomment.
 <p align="center">
-  <img src="docs/images/wharf-player.png" width="900" alt="Wharf playing a film, with the Library sidebar showing the server's folder">
+  <img src="docs/images/wharf-player.png" width="900" alt="Wharf playing Sintel from an SFTP server, paused on an English subtitle, with the Library sidebar showing the film and three subtitle files in the server's folder">
 </p>
--->
+
+<p align="center"><sub>Shown: <a href="https://durian.blender.org">Sintel</a> © Blender Foundation, CC BY 3.0, streamed from an SFTP server.</sub></p>
 
 Wharf is for people who keep their films on a seedbox, NAS or VPS and want to watch them on a Mac without copying them over first. Playback, decoding and subtitle rendering are done by [mpv](https://mpv.io) (libmpv). Wharf adds the connections, the browsing and the history around it.
 

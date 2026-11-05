@@ -35,10 +35,11 @@ Wharf is for people who keep their films on a seedbox, NAS or VPS and want to wa
 - **Streaming over SFTP.** A local pipelined proxy serves byte ranges to mpv, with 32 reads of 64 KiB in flight, so seeking works without downloading the file.
 - **Server profiles.** Save a label, host, port, user, password or key file, optional key passphrase and default directory.
 - **Test Connection.** Authenticates, lists the default directory and reports the real failure reason.
-- **Library browser.** Breadcrumbs, sizes and dates, sort by name or date, search, refresh. The last folder is remembered per server.
+- **Library browser.** Breadcrumbs, search, refresh, and Name, Size and Updated columns you sort by clicking a header. Names sort in natural number order (`2` before `10`). The last folder is remembered per server.
 - **Recents with resume.** Picks up where you left off, with the audio track you chose.
 - **Subtitles.** Embedded tracks, external files found next to the video (SRT, VTT, ASS, SSA), or a local file you choose. Adjust sync offset, size and position.
 - **Audio tracks.** Files with more than one audio track get a menu to pick one. Wharf remembers the choice per file.
+- **Next and previous.** Step through a series in the playing video's folder with the control-bar buttons or `N` / `P`.
 - **Open by URL.** Paste an `sftp://user@host/path` address with `Cmd+O`.
 
 ## Download
@@ -69,6 +70,7 @@ You can also open a single file with `Cmd+O` and an `sftp://` address. A URL tha
 | `←` / `→` | Seek 10 s (60 s with `Shift`) |
 | `↑` / `↓` | Volume (up to 130%) |
 | `F` or double-click | Full screen |
+| `N` / `P` | Next / previous video in the same folder |
 | `Cmd+O` | Open URL |
 | `Cmd+1` / `Cmd+2` / `Cmd+3` | Show or hide Library, Servers, Recents |
 | `←` / `→` on the sidebar divider | Resize the sidebar (`Home` / `End` for narrowest and widest) |

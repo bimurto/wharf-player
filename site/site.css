@@ -2,7 +2,6 @@
  * paper: oklch(18% 0.01 85) · accent: oklch(81% 0.12 80) · display: Panchang · body: Switzer · hero: one word cropped by both edges, lede and action in the top third · nav: corner links · footer: name first, places under it · imagery: a real screenshot of the app under the intro, the interface built in HTML for the live player, archival harbour photographs recoloured to the icon's two colours · signature: drag the playhead and read the byte range Wharf requests, with 0 bytes written to disk
  * axes: dark/display-heavy/warm · posture: monument · contrast: pass · fold: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V4 · weakest: execution, every fragment uses the app's real strings and the inspector runs before hand-off */
-/* Hallmark · waive 26b · no control on the page is ever disabled, so there is no disabled state to style · the Wharf player, tabs and links are always live */
 /* Hallmark · dismissed 23 · the monument word is gold because the Wharf icon is gold on warm black; the brand colour is the name itself */
 /* Hallmark · dismissed F4 · one filled recipe, .btn--accent, used in the hero and the close; the cta rule only changes its hover on the light field */
 /* Hallmark · dismissed 42 · the footer is the dealt name-first shape: the Wharf name, three places, three small link groups */
@@ -127,6 +126,9 @@ code, pre { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0
 .player__play { display: grid; place-items: center; background: none; border: 0; padding: 0; cursor: pointer; width: 26px; height: 26px; border-radius: 4px; transition: background-color var(--t-hover) ease, transform var(--t-hover) ease; }
 .player__play:hover { background: var(--ui-hover); }
 .player__play:active { transform: scale(0.9); }
+.player__step svg { width: 14px; height: 14px; }
+.player__step:disabled, .player__step:disabled:hover { color: var(--ui-placeholder); background: none; cursor: not-allowed; }
+.player__step:disabled:active { transform: none; }
 .player__play svg { width: 18px; height: 18px; }
 .player__play .i-pause, .player[data-state="playing"] .i-play { display: none; }
 .player[data-state="playing"] .i-pause { display: block; }

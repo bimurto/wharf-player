@@ -64,14 +64,35 @@
     scrub.addEventListener('input', () => { frac = Number(scrub.value) / Number(scrub.max); render(); });
     player.querySelector('[data-act="play"]').addEventListener('click', () => setPlaying(player.dataset.state !== 'playing'));
 
+    // Previous and next follow the app: the folder's videos in natural name order, stopping at either end.
+    const order = files.map((_, i) => i)
+      .sort((a, b) => files[a].name.localeCompare(files[b].name, undefined, { numeric: true, sensitivity: 'base' }));
+    const prev = player.querySelector('[data-act="prev"]');
+    const next = player.querySelector('[data-act="next"]');
+    const neighbour = (d) => order[order.indexOf(file) + d];
+
     const tabs = [...document.querySelectorAll('.tab')];
     const select = (i, focus) => {
       file = i;
       tabs.forEach((t, j) => { t.setAttribute('aria-selected', String(j === i)); t.tabIndex = j === i ? 0 : -1; });
       player.querySelectorAll('.player__img').forEach((img) => img.classList.toggle('is-on', Number(img.dataset.file) === i));
       if (focus) tabs[i].focus();
+      for (const [btn, d, label] of [[prev, -1, 'Previous'], [next, 1, 'Next']]) {
+        const n = neighbour(d);
+        btn.disabled = n === undefined;
+        btn.setAttribute('aria-label', n === undefined ? `No ${label.toLowerCase()} video in this folder` : `${label}: ${files[n].name}`);
+      }
       render();
     };
+    const step = (d) => {
+      const n = neighbour(d);
+      if (n === undefined) return;
+      frac = 0;
+      scrub.value = 0;
+      select(n);
+    };
+    prev.addEventListener('click', () => step(-1));
+    next.addEventListener('click', () => step(1));
     tabs.forEach((t, i) => {
       t.addEventListener('click', () => select(i));
       t.addEventListener('keydown', (e) => {

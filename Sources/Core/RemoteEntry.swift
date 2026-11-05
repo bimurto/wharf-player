@@ -45,8 +45,39 @@ public struct Breadcrumb: Equatable, Identifiable, Sendable {
     }
 }
 
+extension RemoteEntry: Identifiable {
+    /// Names are unique within one folder listing.
+    public var id: String { name }
+    /// `modified`, or the distant past when the server gave no date; for sortable table columns.
+    public var modifiedSortKey: Date { modified ?? .distantPast }
+}
+
 public enum LibrarySort: String, CaseIterable, Sendable {
-    case nameAscending, nameDescending, modifiedNewest, modifiedOldest
+    case nameAscending, nameDescending, modifiedNewest, modifiedOldest, sizeAscending, sizeDescending
+}
+
+/// A sortable Library column.
+public enum LibraryColumn: Sendable { case name, size, modified }
+
+public extension LibrarySort {
+    /// The sort for a column header and direction. Oldest-first counts as ascending.
+    init(column: LibraryColumn, ascending: Bool) {
+        switch column {
+        case .name: self = ascending ? .nameAscending : .nameDescending
+        case .size: self = ascending ? .sizeAscending : .sizeDescending
+        case .modified: self = ascending ? .modifiedOldest : .modifiedNewest
+        }
+    }
+
+    var column: LibraryColumn {
+        switch self {
+        case .nameAscending, .nameDescending: .name
+        case .sizeAscending, .sizeDescending: .size
+        case .modifiedNewest, .modifiedOldest: .modified
+        }
+    }
+
+    var ascending: Bool { [.nameAscending, .sizeAscending, .modifiedOldest].contains(self) }
 }
 
 public enum Library {
@@ -61,6 +92,9 @@ public enum Library {
             switch sort {
             case .nameAscending: return name(a, b) == .orderedAscending
             case .nameDescending: return name(a, b) == .orderedDescending
+            case .sizeAscending, .sizeDescending:
+                if a.size != b.size { return sort == .sizeAscending ? a.size < b.size : a.size > b.size }
+                return name(a, b) == .orderedAscending
             case .modifiedNewest, .modifiedOldest:
                 switch (a.modified, b.modified) {
                 case let (x?, y?) where x != y: return sort == .modifiedNewest ? x > y : x < y
@@ -71,6 +105,15 @@ public enum Library {
             }
         }
         return entries.sorted(by: before)
+    }
+
+    /// The video `offset` places from `name` among the videos in `entries`, in natural name order
+    /// ("ep2" before "ep10"). Nil past either end or when `name` is not among them.
+    public static func neighbor(of name: String, in entries: [RemoteEntry], offset: Int) -> RemoteEntry? {
+        let videos = sorted(entries.filter(\.isVideo), by: .nameAscending)
+        guard let index = videos.firstIndex(where: { $0.name == name }) else { return nil }
+        let target = index + offset
+        return videos.indices.contains(target) ? videos[target] : nil
     }
 
     /// Case-insensitive substring match on the name; an empty query keeps everything.

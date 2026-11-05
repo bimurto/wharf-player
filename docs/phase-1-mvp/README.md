@@ -37,6 +37,7 @@ In scope: everything below. Out of scope: Windows and Linux, picture-in-picture 
 | P1-L6 | A slow, older listing response never overwrites a newer one | Done (unit tested) |
 | P1-L7 | Full filename on hover for truncated names; non-video files dimmed and not clickable | Done |
 | P1-L8 | Clicking a video plays it | Done |
+| P1-L9 | Name, Size and Updated (date and time) columns; clicking a header sorts by it and a second click reverses; folders stay first; the last sort is saved between launches | Built, needs manual check |
 
 ### Player
 
@@ -48,6 +49,7 @@ In scope: everything below. Out of scope: Windows and Linux, picture-in-picture 
 | P1-P4 | Open by URL (`sftp://user@host/path`), using a matching saved server's credentials or a key file | Done |
 | P1-P5 | Playback errors are shown, not silent | Done |
 | P1-P6 | Closing the last window quits the app and stops audio | Done |
+| P1-P7 | Previous/Next buttons and P/N keys play the neighbouring video in the playing file's folder, in natural name order (`2` before `10`), regardless of the Library's sort or search | Built, needs manual check |
 
 ### Recents
 

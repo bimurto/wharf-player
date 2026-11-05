@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/images/wharf-player.png" width="900" alt="Wharf playing Sintel from an SFTP server, paused on an English subtitle, with the Library sidebar showing the film and three subtitle files in the server's folder">
+  <img src="docs/images/wharf-player.png" width="900" alt="Wharf playing Sintel from an SFTP server, paused on an English subtitle, with the Library sidebar showing the film and three subtitle files in a table with Name, Size and Updated columns">
 </p>
 
 <p align="center"><sub>Shown: <a href="https://durian.blender.org">Sintel</a> © Blender Foundation, CC BY 3.0, streamed from an SFTP server.</sub></p>

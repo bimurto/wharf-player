@@ -91,17 +91,19 @@ struct LibraryPanel: View {
                 .opacity(playable ? 1 : 0.5)
                 .help(entry.name)
             }
+            .width(min: 140, ideal: 200)
             TableColumn("Size", value: \.size) { entry in
                 Text(entry.isDirectory ? "—" : ByteCountFormatter.string(fromByteCount: Int64(entry.size), countStyle: .file))
                     .monospacedDigit().foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .trailing)
             }
-            .width(min: 50, ideal: 70, max: 100)
+            .width(min: 56, ideal: 68, max: 80)
             TableColumn("Updated", value: \.modifiedSortKey) { entry in
                 Text(entry.modified?.formatted(date: .abbreviated, time: .shortened) ?? "—")
                     .monospacedDigit().foregroundStyle(.secondary)
             }
-            .width(min: 80, ideal: 130, max: 180)
+            .width(min: 120, ideal: 150, max: 170)
         }
+        .alternatingRowBackgrounds(.disabled)
         .onChange(of: selection) {
             guard let name = selection else { return }
             selection = nil

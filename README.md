@@ -75,7 +75,7 @@ You can also open a single file with `Cmd+O` and an `sftp://` address. A URL tha
 | `Cmd+1` / `Cmd+2` / `Cmd+3` | Show or hide Library, Servers, Recents |
 | `←` / `→` on the sidebar divider | Resize the sidebar (`Home` / `End` for narrowest and widest) |
 
-The speed, audio track (2+ tracks only) and subtitle menus are in the control bar. Controls hide after 2.8 s without mouse movement while playing.
+The speed, audio track (2+ tracks only) and subtitle menus are in the control bar. The subtitle menu sets position and size in 1% steps and sync in 0.5 s steps with `−` and `+` buttons. Controls and the cursor hide after 2.8 s without mouse movement while playing.
 
 ## Privacy and security
 

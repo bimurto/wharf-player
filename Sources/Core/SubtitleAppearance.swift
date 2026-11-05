@@ -4,10 +4,10 @@ import Foundation
 public enum SubtitleAppearance {
     public static let scaleRange = 0.75...2.0
     public static let defaultScale = 1.0
-    public static let scaleStep = 0.1
+    public static let scaleStep = 0.01
     public static let positionRange = 50.0...100.0
     public static let defaultPosition = 100.0
-    public static let positionStep = 5.0
+    public static let positionStep = 1.0
 
     public static func clampedScale(_ v: Double) -> Double {
         guard v.isFinite else { return defaultScale }
@@ -19,7 +19,7 @@ public enum SubtitleAppearance {
         return min(max(v, positionRange.lowerBound), positionRange.upperBound)
     }
 
-    /// One step smaller (`direction` < 0) or bigger (> 0), within 75% to 200%.
+    /// One 1% step smaller (`direction` < 0) or bigger (> 0), within 75% to 200%.
     public static func steppedScale(_ v: Double, by direction: Int) -> Double {
         let next = clampedScale(v) + Double(direction.signum()) * scaleStep
         return (clampedScale(next) * 100).rounded() / 100
@@ -29,7 +29,7 @@ public enum SubtitleAppearance {
         steppedScale(v, by: direction) != clampedScale(v)
     }
 
-    /// One step up (smaller `sub-pos`) or down (bigger), within the position range.
+    /// One 1% step up (smaller `sub-pos`) or down (bigger), within the position range.
     public static func steppedPosition(_ v: Double, up: Bool) -> Double {
         clampedPosition(clampedPosition(v) + (up ? -positionStep : positionStep))
     }
@@ -41,10 +41,9 @@ public enum SubtitleAppearance {
     /// "100%", "125%".
     public static func scaleLabel(_ v: Double) -> String { "\(Int((clampedScale(v) * 100).rounded()))%" }
 
-    /// "Bottom" at the default, else "10% up".
+    /// Height above the default bottom position: "0%", "10%".
     public static func positionLabel(_ v: Double) -> String {
-        let up = Int((defaultPosition - clampedPosition(v)).rounded())
-        return up == 0 ? "Bottom" : "\(up)% up"
+        "\(Int((defaultPosition - clampedPosition(v)).rounded()))%"
     }
 }
 

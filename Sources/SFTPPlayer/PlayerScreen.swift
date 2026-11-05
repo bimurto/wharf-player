@@ -7,6 +7,7 @@ struct PlayerScreen: View {
     @Bindable var model: AppModel
     @State private var controlsVisible = true
     @State private var hideTask: Task<Void, Never>?
+    @State private var subtitlesOpen = false
     @State private var sidebarWidth = SidebarWidthStore.defaultWidth
     @State private var dragStartWidth: Double?
     @FocusState private var dividerFocused: Bool
@@ -85,7 +86,7 @@ struct PlayerScreen: View {
     private var playerArea: some View {
         ZStack(alignment: .bottom) {
             MPVVideoView(player: player, onMouseMoved: revealControls, onClick: { model.showSidebar = false },
-                         onSibling: model.playSibling)
+                         onSibling: model.playSibling, hidesCursor: !showsControls && model.currentURL != nil)
             if model.currentURL == nil { WelcomeView(model: model) }
             if let error = player.errorMessage {
                 Text("Playback failed: \(error)")
@@ -99,7 +100,7 @@ struct PlayerScreen: View {
                     .padding(8).background(.red.opacity(0.85), in: RoundedRectangle(cornerRadius: 8))
                     .foregroundStyle(.white).frame(maxHeight: .infinity, alignment: .top).padding(.top, 48)
             }
-            if model.currentURL != nil && (controlsVisible || player.paused) {
+            if model.currentURL != nil && showsControls {
                 Text(fileName)
                     .font(.headline).lineLimit(1).truncationMode(.middle)
                     .padding(.horizontal, 14).padding(.vertical, 8)
@@ -109,7 +110,8 @@ struct PlayerScreen: View {
                             onAddSubtitle: model.loadExternalSubtitle,
                             onToggleSidebar: { model.showSidebar.toggle() },
                             previous: model.previousEntry, next: model.nextEntry,
-                            onSibling: model.playSibling).padding(16).transition(.opacity)
+                            onSibling: model.playSibling,
+                            subtitlesOpen: $subtitlesOpen).padding(16).transition(.opacity)
             }
         }
         .background(Theme.black)
@@ -117,6 +119,9 @@ struct PlayerScreen: View {
         .onChange(of: player.position) { model.saveProgressThrottled() }
         .sheet(isPresented: $model.showOpenSheet) { OpenSheet(model: model) }
     }
+
+    /// Paused playback and an open subtitles panel keep the controls up.
+    private var showsControls: Bool { controlsVisible || player.paused || subtitlesOpen }
 
     /// The playing file's name, as the recents list titles it.
     private var fileName: String {
@@ -146,6 +151,7 @@ private struct ControlsBar: View {
     let previous: RemoteEntry?
     let next: RemoteEntry?
     let onSibling: (Int) -> Void
+    @Binding var subtitlesOpen: Bool
     @State private var scrub: Double?
 
     private static let speeds: [Double] = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -161,60 +167,60 @@ private struct ControlsBar: View {
         _ = player.addSubtitle(url: url.absoluteString, name: url.lastPathComponent)
     }
 
-    /// Lists embedded and loaded external tracks, Off, and server subtitle files not yet loaded;
-    /// the current choice carries a checkmark.
+    /// Lists Off, embedded and loaded external tracks (the current one checked), position, size and sync
+    /// as `− value +` rows (holding a button repeats the step), and server subtitle files not yet loaded.
     private var subtitleMenu: some View {
         let tracks = player.subtitleTracks
         let available = ExternalSubtitles.notLoaded(externalSubtitles, tracks: tracks)
-        return Menu {
-            Text(tracks.isEmpty ? "No subtitles" : "\(tracks.count) subtitle track\(tracks.count == 1 ? "" : "s")")
-            Divider()
-            Button { player.setSubtitle(nil) } label: {
-                if SubtitleTrack.isOff(tracks) { Label("Off", systemImage: "checkmark") } else { Text("Off") }
-            }
-            ForEach(tracks) { track in
-                Button { player.setSubtitle(track.id) } label: {
-                    if track.selected { Label(track.label, systemImage: "checkmark") } else { Text(track.label) }
-                }
-            }
-            Divider()
-            Menu("Sync: \(SubtitleSync.label(player.subtitleDelay))") {
-                Button("Earlier (-0.5 s)") { player.stepSubtitleDelay(-1) }
-                    .disabled(!SubtitleSync.canStep(player.subtitleDelay, by: -1))
-                Button("Later (+0.5 s)") { player.stepSubtitleDelay(1) }
-                    .disabled(!SubtitleSync.canStep(player.subtitleDelay, by: 1))
-                Button("Reset") { player.resetSubtitleDelay() }
-                    .disabled(player.subtitleDelay == 0)
-            }
-            Menu("Size: \(SubtitleAppearance.scaleLabel(player.subtitleScale))") {
-                Button("Smaller") { player.stepSubtitleScale(-1) }
-                    .disabled(!SubtitleAppearance.canStepScale(player.subtitleScale, by: -1))
-                Button("Bigger") { player.stepSubtitleScale(1) }
-                    .disabled(!SubtitleAppearance.canStepScale(player.subtitleScale, by: 1))
-            }
-            Menu("Position: \(SubtitleAppearance.positionLabel(player.subtitlePosition))") {
-                Button("Up") { player.stepSubtitlePosition(up: true) }
-                    .disabled(!SubtitleAppearance.canStepPosition(player.subtitlePosition, up: true))
-                Button("Down") { player.stepSubtitlePosition(up: false) }
-                    .disabled(!SubtitleAppearance.canStepPosition(player.subtitlePosition, up: false))
-            }
-            Button("Reset size and position") { player.resetSubtitleAppearance() }
-                .disabled(player.subtitleScale == SubtitleAppearance.defaultScale
-                          && player.subtitlePosition == SubtitleAppearance.defaultPosition)
-            Divider()
-            Button("Choose file…") { chooseLocalSubtitle() }
-            if !available.isEmpty {
-                Section("On the server") {
-                    ForEach(available) { sub in
-                        Button(sub.name) { onAddSubtitle(sub) }
+        return Button { subtitlesOpen.toggle() } label: { Image(systemName: "captions.bubble") }
+            .help("Subtitles")
+            .popover(isPresented: $subtitlesOpen, arrowEdge: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(tracks.isEmpty ? "No subtitles" : "\(tracks.count) subtitle track\(tracks.count == 1 ? "" : "s")")
+                        .font(.caption).foregroundStyle(.secondary)
+                    TrackRow(label: "Off", selected: SubtitleTrack.isOff(tracks)) { player.setSubtitle(nil) }
+                    ForEach(tracks) { track in
+                        TrackRow(label: track.label, selected: track.selected) { player.setSubtitle(track.id) }
+                    }
+                    Divider()
+                    Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 8) {
+                        StepRow(title: "Position", value: SubtitleAppearance.positionLabel(player.subtitlePosition),
+                                canDecrease: SubtitleAppearance.canStepPosition(player.subtitlePosition, up: false),
+                                canIncrease: SubtitleAppearance.canStepPosition(player.subtitlePosition, up: true),
+                                decreaseHelp: "Move down 1%", increaseHelp: "Move up 1%",
+                                decrease: { player.stepSubtitlePosition(up: false) },
+                                increase: { player.stepSubtitlePosition(up: true) })
+                        StepRow(title: "Size", value: SubtitleAppearance.scaleLabel(player.subtitleScale),
+                                canDecrease: SubtitleAppearance.canStepScale(player.subtitleScale, by: -1),
+                                canIncrease: SubtitleAppearance.canStepScale(player.subtitleScale, by: 1),
+                                decreaseHelp: "Smaller by 1%", increaseHelp: "Bigger by 1%",
+                                decrease: { player.stepSubtitleScale(-1) },
+                                increase: { player.stepSubtitleScale(1) })
+                        StepRow(title: "Sync", value: SubtitleSync.label(player.subtitleDelay),
+                                canDecrease: SubtitleSync.canStep(player.subtitleDelay, by: -1),
+                                canIncrease: SubtitleSync.canStep(player.subtitleDelay, by: 1),
+                                decreaseHelp: "Earlier by 0.5 s", increaseHelp: "Later by 0.5 s",
+                                decrease: { player.stepSubtitleDelay(-1) },
+                                increase: { player.stepSubtitleDelay(1) })
+                    }
+                    HStack {
+                        Button("Reset size and position") { player.resetSubtitleAppearance() }
+                            .disabled(player.subtitleScale == SubtitleAppearance.defaultScale
+                                      && player.subtitlePosition == SubtitleAppearance.defaultPosition)
+                        Button("Reset sync") { player.resetSubtitleDelay() }
+                            .disabled(player.subtitleDelay == 0)
+                    }
+                    Divider()
+                    Button("Choose file…") { subtitlesOpen = false; chooseLocalSubtitle() }
+                    if !available.isEmpty {
+                        Text("On the server").font(.caption).foregroundStyle(.secondary)
+                        ForEach(available) { sub in
+                            Button(sub.name) { onAddSubtitle(sub) }.buttonStyle(.borderless)
+                        }
                     }
                 }
+                .padding(14)
             }
-        } label: {
-            Image(systemName: "captions.bubble")
-        }
-        .menuStyle(.button).menuIndicator(.hidden).fixedSize()
-        .help("Subtitles")
     }
 
     /// Lists the audio tracks with a checkmark on the playing one; the caller shows it only for 2+ tracks.
@@ -279,6 +285,53 @@ private struct ControlsBar: View {
         .buttonStyle(.borderless)
         .padding(.horizontal, 14).padding(.vertical, 10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+/// A subtitle track in the subtitles panel, with a checkmark when it is the current one.
+private struct TrackRow: View {
+    let label: String
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: "checkmark").opacity(selected ? 1 : 0)
+                Text(label)
+            }
+        }
+        .buttonStyle(.borderless)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
+/// One `Title  −  value  +` row of the subtitles panel.
+private struct StepRow: View {
+    let title: String
+    let value: String
+    let canDecrease: Bool
+    let canIncrease: Bool
+    let decreaseHelp: String
+    let increaseHelp: String
+    let decrease: () -> Void
+    let increase: () -> Void
+
+    var body: some View {
+        GridRow {
+            Text(title)
+            Button(action: decrease) { Image(systemName: "minus").frame(width: 14, height: 14) }
+                .disabled(!canDecrease).help(decreaseHelp)
+            Text(value).monospacedDigit().frame(minWidth: 64)
+                .gridColumnAlignment(.center)
+            Button(action: increase) { Image(systemName: "plus").frame(width: 14, height: 14) }
+                .disabled(!canIncrease).help(increaseHelp)
+        }
+        .buttonRepeatBehavior(.enabled)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityValue(value)
+        .accessibilityAdjustableAction { $0 == .increment ? increase() : decrease() }
     }
 }
 

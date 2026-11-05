@@ -72,9 +72,15 @@
       </div>
       <div class="player__bar">
         <span class="ico" aria-hidden="true"><svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="2"/><path d="M7.5 4v12"/></svg></span>
+        <button class="player__play player__step" type="button" aria-label="Previous video" data-act="prev">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M15 4.5v11l-8-5.5z M5 4.5h2v11H5z" fill="currentColor" stroke="none"/></svg>
+        </button>
         <button class="player__play" type="button" aria-label="Play" data-act="play">
           <svg class="i-play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4.5v11l9-5.5z" fill="currentColor" stroke="none"/></svg>
           <svg class="i-pause" viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4.5h2.6v11H6zM11.4 4.5H14v11h-2.6z" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <button class="player__play player__step" type="button" aria-label="Next video" data-act="next">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 4.5v11l8-5.5z M13 4.5h2v11h-2z" fill="currentColor" stroke="none"/></svg>
         </button>
         <span class="player__time num" data-out="pos">0:42:30</span>
         <label class="visually-hidden" for="scrub">Playhead</label>

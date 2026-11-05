@@ -13,6 +13,15 @@ final class MPVGLView: NSOpenGLView {
     var onClick: (() -> Void)?
     /// Plays the next (1) or previous (-1) video in the folder.
     var onSibling: ((Int) -> Void)?
+    /// When this turns true with the pointer over the video, the cursor hides until the mouse moves.
+    var hidesCursor = false {
+        didSet {
+            guard hidesCursor, !oldValue, let window, window.isKeyWindow else { return }
+            if bounds.contains(convert(window.mouseLocationOutsideOfEventStream, from: nil)) {
+                NSCursor.setHiddenUntilMouseMoves(true)
+            }
+        }
+    }
 
     init(player: MPVPlayer) {
         self.player = player
@@ -126,12 +135,14 @@ struct MPVVideoView: NSViewRepresentable {
     let onMouseMoved: () -> Void
     let onClick: () -> Void
     let onSibling: (Int) -> Void
+    let hidesCursor: Bool
 
     func makeNSView(context: Context) -> MPVGLView {
         let view = MPVGLView(player: player)
         view.onMouseMoved = onMouseMoved
         view.onClick = onClick
         view.onSibling = onSibling
+        view.hidesCursor = hidesCursor
         return view
     }
 
@@ -139,5 +150,6 @@ struct MPVVideoView: NSViewRepresentable {
         view.onMouseMoved = onMouseMoved
         view.onClick = onClick
         view.onSibling = onSibling
+        view.hidesCursor = hidesCursor
     }
 }

@@ -3,8 +3,8 @@ import XCTest
 
 final class SubtitleAppearanceTests: XCTestCase {
     func testScaleStepsAndClamps() {
-        XCTAssertEqual(SubtitleAppearance.steppedScale(1.0, by: 1), 1.1, accuracy: 1e-9)
-        XCTAssertEqual(SubtitleAppearance.steppedScale(1.0, by: -1), 0.9, accuracy: 1e-9)
+        XCTAssertEqual(SubtitleAppearance.steppedScale(1.0, by: 1), 1.01, accuracy: 1e-9)
+        XCTAssertEqual(SubtitleAppearance.steppedScale(1.0, by: -1), 0.99, accuracy: 1e-9)
         XCTAssertEqual(SubtitleAppearance.steppedScale(2.0, by: 1), 2.0)
         XCTAssertEqual(SubtitleAppearance.steppedScale(0.75, by: -1), 0.75)
         XCTAssertEqual(SubtitleAppearance.clampedScale(5), 2.0)
@@ -14,8 +14,8 @@ final class SubtitleAppearanceTests: XCTestCase {
     }
 
     func testPositionStepsAndClamps() {
-        XCTAssertEqual(SubtitleAppearance.steppedPosition(100, up: true), 95)
-        XCTAssertEqual(SubtitleAppearance.steppedPosition(95, up: false), 100)
+        XCTAssertEqual(SubtitleAppearance.steppedPosition(100, up: true), 99)
+        XCTAssertEqual(SubtitleAppearance.steppedPosition(99, up: false), 100)
         XCTAssertEqual(SubtitleAppearance.steppedPosition(100, up: false), 100)
         XCTAssertEqual(SubtitleAppearance.steppedPosition(50, up: true), 50)
         XCTAssertEqual(SubtitleAppearance.clampedPosition(200), 100)
@@ -27,8 +27,8 @@ final class SubtitleAppearanceTests: XCTestCase {
     func testLabels() {
         XCTAssertEqual(SubtitleAppearance.scaleLabel(1.0), "100%")
         XCTAssertEqual(SubtitleAppearance.scaleLabel(1.25), "125%")
-        XCTAssertEqual(SubtitleAppearance.positionLabel(100), "Bottom")
-        XCTAssertEqual(SubtitleAppearance.positionLabel(90), "10% up")
+        XCTAssertEqual(SubtitleAppearance.positionLabel(100), "0%")
+        XCTAssertEqual(SubtitleAppearance.positionLabel(90), "10%")
     }
 
     func testStorePersistsAndDefaults() {

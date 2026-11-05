@@ -13,6 +13,9 @@ final class AppModel {
     /// External subtitle files found for the current video, best match first.
     private(set) var externalSubtitles: [ExternalSubtitle] = []
     private let subtitleDiscovery = SubtitleDiscovery()
+    /// The videos before and after the current one in its folder, in natural name order.
+    private(set) var previousEntry: RemoteEntry?
+    private(set) var nextEntry: RemoteEntry?
     var servers: [ConnectionProfile] = []
     var activeProfile: ConnectionProfile?
     var showSidebar = false
@@ -28,6 +31,9 @@ final class AppModel {
     @ObservationIgnored private var proxy: SFTPProxy?
     @ObservationIgnored private var proxyKey: String?
     @ObservationIgnored private var lastSaved = Date.distantPast
+    @ObservationIgnored private var currentTarget: SFTPTarget?
+    /// Incremented per video so a slow sibling listing for an older video is dropped.
+    @ObservationIgnored private var siblingRequest = 0
 
     init() {
         servers = profiles.all()
@@ -129,8 +135,20 @@ final class AppModel {
                 externalSubtitles = found
             }
         }
+        let folder = (target.path as NSString).deletingLastPathComponent
+        currentTarget = target
+        previousEntry = nil
+        nextEntry = nil
+        siblingRequest += 1
+        let request = siblingRequest
+        Task {
+            guard case .success(let listing) = await lister.list(folder.isEmpty ? "/" : folder),
+                  request == siblingRequest else { return }
+            let name = (target.path as NSString).lastPathComponent
+            previousEntry = Library.neighbor(of: name, in: listing.entries, offset: -1)
+            nextEntry = Library.neighbor(of: name, in: listing.entries, offset: 1)
+        }
         if library.path.isEmpty {
-            let folder = (target.path as NSString).deletingLastPathComponent
             Task { await library.load(folder.isEmpty ? "/" : folder) }
         }
         return .started
@@ -150,6 +168,18 @@ final class AppModel {
         guard let base = library.target else { return }
         Task {
             if case .hostKey(let issue, _) = await play(base.with(path: library.childPath(entry.name))) {
+                library.hostKeyIssue = issue
+            }
+        }
+    }
+
+    /// Plays the next (`offset` 1) or previous (-1) video in the current video's folder.
+    func playSibling(_ offset: Int) {
+        guard let target = currentTarget, let entry = offset > 0 ? nextEntry : previousEntry else { return }
+        let folder = (target.path as NSString).deletingLastPathComponent
+        let path = folder == "/" || folder.isEmpty ? "/" + entry.name : folder + "/" + entry.name
+        Task {
+            if case .hostKey(let issue, _) = await play(target.with(path: path)) {
                 library.hostKeyIssue = issue
             }
         }

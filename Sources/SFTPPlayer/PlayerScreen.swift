@@ -84,7 +84,8 @@ struct PlayerScreen: View {
 
     private var playerArea: some View {
         ZStack(alignment: .bottom) {
-            MPVVideoView(player: player, onMouseMoved: revealControls, onClick: { model.showSidebar = false })
+            MPVVideoView(player: player, onMouseMoved: revealControls, onClick: { model.showSidebar = false },
+                         onSibling: model.playSibling)
             if model.currentURL == nil { WelcomeView(model: model) }
             if let error = player.errorMessage {
                 Text("Playback failed: \(error)")
@@ -106,7 +107,9 @@ struct PlayerScreen: View {
                     .frame(maxHeight: .infinity, alignment: .top).padding(16).transition(.opacity)
                 ControlsBar(player: player, externalSubtitles: model.externalSubtitles,
                             onAddSubtitle: model.loadExternalSubtitle,
-                            onToggleSidebar: { model.showSidebar.toggle() }).padding(16).transition(.opacity)
+                            onToggleSidebar: { model.showSidebar.toggle() },
+                            previous: model.previousEntry, next: model.nextEntry,
+                            onSibling: model.playSibling).padding(16).transition(.opacity)
             }
         }
         .background(Theme.black)
@@ -139,6 +142,10 @@ private struct ControlsBar: View {
     let externalSubtitles: [ExternalSubtitle]
     let onAddSubtitle: (ExternalSubtitle) -> Void
     let onToggleSidebar: () -> Void
+    /// The videos before and after this one in its folder; nil disables the button.
+    let previous: RemoteEntry?
+    let next: RemoteEntry?
+    let onSibling: (Int) -> Void
     @State private var scrub: Double?
 
     private static let speeds: [Double] = [0.5, 0.75, 1, 1.25, 1.5, 2]
@@ -230,11 +237,19 @@ private struct ControlsBar: View {
             Button(action: onToggleSidebar) { Image(systemName: "sidebar.left") }
                 .help("Library, Servers and Recents")
 
+            Button { onSibling(-1) } label: { Image(systemName: "backward.end.fill") }
+                .disabled(previous == nil)
+                .help(previous.map { "Previous: \($0.name) (P)" } ?? "No previous video in this folder")
+
             Button { player.togglePause() } label: {
                 Image(systemName: player.paused ? "play.fill" : "pause.fill").frame(width: 18)
             }
             .keyboardShortcut(.space, modifiers: [])
             .help(player.paused ? "Play" : "Pause")
+
+            Button { onSibling(1) } label: { Image(systemName: "forward.end.fill") }
+                .disabled(next == nil)
+                .help(next.map { "Next: \($0.name) (N)" } ?? "No next video in this folder")
 
             Text(Timecode.string(scrub ?? player.position)).monospacedDigit()
             Slider(value: Binding(get: { scrub ?? player.position }, set: { scrub = $0 }),

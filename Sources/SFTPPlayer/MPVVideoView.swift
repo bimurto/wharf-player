@@ -11,6 +11,8 @@ final class MPVGLView: NSOpenGLView {
     var onMouseMoved: (() -> Void)?
     /// Called on every click on the video.
     var onClick: (() -> Void)?
+    /// Plays the next (1) or previous (-1) video in the folder.
+    var onSibling: ((Int) -> Void)?
 
     init(player: MPVPlayer) {
         self.player = player
@@ -106,6 +108,8 @@ final class MPVGLView: NSOpenGLView {
         case "\u{F700}": player.setVolume(player.volume + 5)
         case "\u{F701}": player.setVolume(player.volume - 5)
         case "f": window?.toggleFullScreen(nil)
+        case "n": onSibling?(1)
+        case "p": onSibling?(-1)
         default: super.keyDown(with: event)
         }
     }
@@ -121,16 +125,19 @@ struct MPVVideoView: NSViewRepresentable {
     let player: MPVPlayer
     let onMouseMoved: () -> Void
     let onClick: () -> Void
+    let onSibling: (Int) -> Void
 
     func makeNSView(context: Context) -> MPVGLView {
         let view = MPVGLView(player: player)
         view.onMouseMoved = onMouseMoved
         view.onClick = onClick
+        view.onSibling = onSibling
         return view
     }
 
     func updateNSView(_ view: MPVGLView, context: Context) {
         view.onMouseMoved = onMouseMoved
         view.onClick = onClick
+        view.onSibling = onSibling
     }
 }
